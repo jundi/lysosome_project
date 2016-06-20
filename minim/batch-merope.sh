@@ -9,7 +9,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=heikki.mikkolainen@tut.fi
 
-module load gromacs-tut/5.0.6-avx
+module load gromacs-tut/5.1.2-avx
 
 cd lambda${SLURM_ARRAY_TASK_ID}
 mpirun mdrun_mpi -maxh 0.25 -dlb yes -cpi
