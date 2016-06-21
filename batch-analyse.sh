@@ -5,7 +5,7 @@ Usage: \n
 \t$(basename $0) [OPTION...] [TASK1,TASK2,...] \n
 \n
 Example: \n
-\t$ sh batch-analyse.sh -n index.ndx -s topol.tpr -f traj.xtc -b 100000 -j 4 order rms density \n
+\t$ bash $(basename $0) -n index.ndx -s topol.tpr -f traj.xtc -b 100000 -j 4 order rms density \n
 \n
 Options: \n
 \t-n \t index.ndx \n
@@ -147,8 +147,7 @@ fi
 ########
 main() {
 
-  for task in ${tasks[@]}
-  do
+  for task in ${tasks[@]} ;do
     mkdir -p logs
     echo -e "Calculating $task..."
     $task  >"logs/${task}.log" 2> "logs/${task}2.log"
@@ -213,7 +212,6 @@ order() {
   mkdir -p $workdir
   cd $workdir
 
-
   for tn in ${tailnames[@]}; do
 
     # TAIL ATOMS
@@ -258,11 +256,19 @@ order() {
     # Reference group
     gmx order -f $traj_nw -nr $index_nw -s $structure_nw  -b $begin -n $tail_ndx -o "order_$tn" -os "sliced_$tn" -od "deuter_$tn" -dt $dt $unsat
 
-    # wait until other jobs finish
-    waitjobs
   done
-  xvg_fixdeuter.py -f deuter_POPC_SN1.xvg -o deuter_POPC_SN1_fixed.xvg
-  xvg_fixdeuter.py -f deuter_POPC_SN2.xvg -o deuter_POPC_SN2_fixed.xvg -u deuter_POPC_SN2_unsat.xvg -a 9 10
+
+
+  # merge saturated/unsaturated atoms and fix atom numbers
+  if [[ -f deuter_POPC_SN1.xvg && -f deuter_POPC_SN2.xvg ]]; then
+    xvg_fixdeuter.py -f deuter_POPC_SN1.xvg -o deuter_POPC_SN1_fixed.xvg
+    xvg_fixdeuter.py -f deuter_POPC_SN2.xvg -o deuter_POPC_SN2_fixed.xvg -u deuter_POPC_SN2_unsat.xvg -a 9 10
+  fi
+
+  if [[ -f deuter_DPPC_SN1.xvg && -f deuter_DPPC_SN2.xvg ]]; then
+    xvg_fixdeuter.py -f deuter_DPPC_SN1.xvg -o deuter_DPPC_SN1_fixed.xvg
+    xvg_fixdeuter.py -f deuter_DPPC_SN2.xvg -o deuter_DPPC_SN2_fixed.xvg 
+  fi
 
   cd ..
 }
