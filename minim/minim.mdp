@@ -39,6 +39,7 @@ pcoupltype	        = semiisotropic	            ; non-uniform scaling of box vect
 tau_p		        = 10.0 10.0	            ; time constant, in ps
 ref_p		        = 1.0 1.0	            ; reference pressure, in bar
 compressibility         = 4.5e-5 4.5e-5	            ; isothermal compressibility of water, bar^-1
+refcoord-scaling        = all                       ; position restraints on
 ; Periodic boundary conditions
 pbc		= xyz		; 3-D PBC
 ; Dispersion correction
