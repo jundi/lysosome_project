@@ -30,6 +30,8 @@ Tasks: \n
 \tdist \n
 \tdist_fep \n
 \tmsd\n
+\tdensmap \n
+\tdensmap_fep \n
 \n
 "
 
@@ -118,7 +120,7 @@ while [[ $# -gt 0 ]]; do
       fepdir=$(readlink -f $2)
       shift
       ;;
-    order|rms|sas|box|density|bar|dist|dist_fep|msd)
+    order|rms|sas|box|density|bar|dist|dist_fep|msd|densmap|densmap)
       tasks+=("$1")
       ;;
     *)
@@ -206,7 +208,7 @@ rms() {
 order() {
 
   # settings
-  tailnames=("POPC_SN1" "POPC_SN2" "POPC_SN2_unsat" "DPPC_SN1" "DPPC_SN2")
+  tailnames=("POPC_SN1" "POPC_SN2" "POPC_SN2_unsat" "DPPC_SN1" "DPPC_SN2" "SM16_1" "SM16_1_unsat" "SM16_2")
   workdir=order
 
   mkdir -p $workdir
@@ -231,6 +233,21 @@ order() {
 	resname=POPC
 	unsat="-unsat"
 	;;
+      "SM16_1")
+	tail=(C1 C2 C21 C22 C23 C24 C25 C26 C27 C28 C29 C210 C211 C212 C213 C214 C215 C216)
+	resname=SM16
+	unsat="-nounsat"
+	;;
+      "SM16_1_unsat")
+	tail=(C21 C22 C23 C24)
+	resname=SM16
+	unsat="-nounsat"
+	;;
+      "SM16_2")
+	tail=(C31 C32 C33 C34 C35 C36 C37 C38 C39 C310 C311 C312 C313 C314 C315 C316)
+	resname=SM16
+	unsat="-nounsat"
+	;;
       *)
 	echo "ERROR: Unknown tail"
 	continue
@@ -254,7 +271,7 @@ order() {
 
     # G_ORDER
     # Reference group
-    gmx order -f $traj_nw -nr $index_nw -s $structure_nw  -b $begin -n $tail_ndx -o "order_$tn" -os "sliced_$tn" -od "deuter_$tn" -dt $dt $unsat
+    gmx order -f $traj_nw -nr $index_nw -s $structure_nw  -b $begin -n $tail_ndx -o "order_$tn" -os "sliced_$tn" -od "deuter_$tn" -dt $dt $unsat -sl 100 -calcdist
 
   done
 
@@ -268,6 +285,11 @@ order() {
   if [[ -f deuter_DPPC_SN1.xvg && -f deuter_DPPC_SN2.xvg ]]; then
     xvg_fixdeuter.py -f deuter_DPPC_SN1.xvg -o deuter_DPPC_SN1_fixed.xvg
     xvg_fixdeuter.py -f deuter_DPPC_SN2.xvg -o deuter_DPPC_SN2_fixed.xvg 
+  fi
+
+  if [[ -f deuter_SM16_1.xvg && -f deuter_SM16_2.xvg ]]; then
+    xvg_fixdeuter.py -f deuter_SM16_1.xvg -o deuter_SM16_1_fixed.xvg -u deuter_SM16_1_unsat.xvg -a 4 5
+    xvg_fixdeuter.py -f deuter_SM16_2.xvg -o deuter_SM16_2_fixed.xvg
   fi
 
   cd ..
@@ -371,15 +393,18 @@ bar() {
   # settings
   workdir=bar
   temp=310
-  b=0
-  e=-1
-  tmax=20000
-  twin=2000
+  b=1
+  tstep=2000
 
   mkdir -p $workdir
   cd $workdir
 
-  # create dhdl string
+  # last frame
+  tmax_decimal=$(gmx check -f ${fepdir}/lambda0/state.cpt  2>&1 | grep "Last frame" | awk '{print $5}')
+  tmax=$(echo $tmax_decimal/1 | bc) # decimal to integer
+  echo "Last frame = $tmax"
+
+  # create list of dhdl files
   dhdl=""
   for i in {0..15}; do
     dhdl="${dhdl} ${fepdir}/lambda${i}/dhdl.xvg"
@@ -388,13 +413,21 @@ bar() {
   # BAR
   while [[ $b -lt $tmax ]]; do
 
-    sem -j $maxjobs gmx bar -f $dhdl -o bar_$b -oi barint_$b -oh histogram_$b -b $b -e $e 
-    let b=$b+$twin
+    let e=$b+$tstep-1
+    for E in $tmax $e; do 
+      sem -j $maxjobs gmx bar -f $dhdl -o bar_$b-$E -oi barint_$b-$E -oh histogram_$b-$E -b $b -e $E 
+    done
+    let b=$b+$tstep
 
   done
 
   # wait until other jobs finish
   sem --wait
+
+  # join
+  ls  barint_*000.xvg | sort -t _ -k2n | xargs join-xvg.py -l -o barint_blocks.xvg
+  ls  barint_*${tmax}.xvg | sort -t _ -k2n | xargs join-xvg.py -l -o barint.xvg
+
   # DEMUX
   demux.pl $fepdir/lambda0/md.log
 
@@ -442,18 +475,15 @@ dist_fep() {
       mkdir -p $group/$l
 
       distance -s ${fepdir}/lambda${l}/topol.tpr -f ${fepdir}/lambda${l}/traj_comp.xtc -n $index -oxyz $group/$l/xyz.xvg -oz $group/$l/z.xvg -oabsz $group/$l/absz.xvg -ref "$ref" -select "$select"  -seltype "res_com"
-
       average-xvg.py $group/$l/absz.xvg -o $group/$l/absz_average.xvg
 
-
     done
+
     # all windows to same xvg-file
     find -wholename "./$group/*/z.xvg" | sort -t '/' -k2n | xargs join-xvg.py -o $group/z.xvg -l
     find -wholename "./$group/*/absz.xvg" | sort -t '/' -k2n | xargs join-xvg.py -o $group/absz.xvg -l
-  done
 
-  # all windows to same xvg-file
-  #find -wholename "*/FepCHOL/z.xvg" | sort -t '/' -k2n | xargs join-xvg.py -o all_z.xvg -l
+  done
 
   cd ..
 }
@@ -479,6 +509,27 @@ msd() {
       echo "$group" | sem -j $maxjobs gmx msd -trestart 100 -lateral z -f $traj -n $index -s $structure -b $begin -o $group/msd_b${begin}.xvg -mol $group/diff_b${begin}
     fi
 
+  done
+
+  cd ..
+}
+
+
+
+###############
+# DENSITY MAP #
+###############
+densmap() {
+
+  # settings
+  workdir=densmap
+
+  mkdir -p $workdir
+  cd $workdir
+
+  for group in POPC CHOL CERA SM16 LBPA FepCHOL FepCHOL_C3 FepCHOL_C17; do
+    echo $group | gmx densmap -f $traj -s $structure -n $index -b $begin -bin 0.2 -unit nm-2 -o $group.xpm #-od $group.dat
+    gmx xpm2ps -f $group.xpm -rainbow blue -o $group.eps
   done
 
   cd ..
