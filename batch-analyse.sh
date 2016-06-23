@@ -120,7 +120,7 @@ while [[ $# -gt 0 ]]; do
       fepdir=$(readlink -f $2)
       shift
       ;;
-    order|rms|sas|box|density|bar|dist|dist_fep|msd|densmap|densmap)
+    order|rms|sas|box|density|bar|dist|dist_fep|msd|densmap|densmap_fep)
       tasks+=("$1")
       ;;
     *)
@@ -530,6 +530,35 @@ densmap() {
   for group in POPC CHOL CERA SM16 LBPA FepCHOL FepCHOL_C3 FepCHOL_C17; do
     echo $group | gmx densmap -f $traj -s $structure -n $index -b $begin -bin 0.2 -unit nm-2 -o $group.xpm #-od $group.dat
     gmx xpm2ps -f $group.xpm -rainbow blue -o $group.eps
+  done
+
+  cd ..
+}
+
+
+
+densmap_fep() {
+
+  # settings
+  workdir=densmap_fep
+
+  mkdir -p $workdir
+  cd $workdir
+
+  # last frame
+  tmax_decimal=$(gmx check -f ${fepdir}/lambda0/state.cpt  2>&1 | grep "Last frame" | awk '{print $5}')
+  tmax=$(echo $tmax_decimal/1 | bc) # decimal to integer
+  echo "Last frame = $tmax"
+
+  e=$tmax
+  b=$begin
+  for group in POPC CHOL CERA SM16 LBPA FepCHOL FepCHOL_C3 FepCHOL_C17; do
+    mkdir -p $group
+    for l in {0..15}; do
+      mkdir -p $group/$l
+      echo $group | gmx densmap -f ${fepdir}/lambda${l}/traj_comp.xtc -s ${fepdir}/lambda${l}/topol.tpr -n $index -b $begin -bin 0.2 -unit nm-2 -o $group/$l/$b-$e.xpm #-od $group.dat
+      gmx xpm2ps -f $group/$l/$b-$e.xpm -rainbow blue -o $group/$l/$b-$e.eps
+    done
   done
 
   cd ..
