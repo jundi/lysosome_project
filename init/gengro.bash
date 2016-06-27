@@ -1,20 +1,22 @@
 #!/bin/bash
-#SBATCH -J gengro
-#SBATCH -n 1
-#SBATCH -t 00:05:00
 
-
-# get different states from some trajectory
+# use different timesteps and residues to produce different inital states for
+# FEP+REMD simulations
 traj="../../npt/traj_comp.xtc"
 tpr="../../npt/topol.tpr"
-timestep=10000 	# timestep between states
-firstframe=20000 # last frame in trajectory
-lastframe=100000 # last frame in trajectory
+timesteps=(100000 65000 30000)
+residues=(91 92 93 94 95)
 
-t=$firstframe
-while [[ $t -lt $lastframe ]]; do
+l=0
+for t in ${timesteps[@]}; do
 
-  let t=$t+$timestep
-  echo "System" | gmx trjconv -f $traj -s $tpr -dump $t -b $t -e $t -o ${t}ps.gro
+  mkdir -p $t
+  echo "System" | gmx trjconv -f $traj -s $tpr -dump $t -b $t -e $t -o ${t}/original.gro
+
+  for r in ${residues[@]}; do
+    gro_reorder_residues.py -f ${t}/original.gro -o ${t}/${r}.gro -r1 ${residues[0]} -r2 $r
+    ln -s ${t}/${r}.gro lambda$l.gro
+    let l=$l+1
+  done
 
 done
