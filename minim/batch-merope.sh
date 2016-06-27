@@ -12,4 +12,4 @@
 module load gromacs-tut/5.1.2-avx
 
 cd lambda${SLURM_ARRAY_TASK_ID}
-mpirun mdrun_mpi -maxh 0.25 -dlb yes -cpi
+mpirun gmx_mpi mdrun -maxh 0.25 -dlb yes -cpi
