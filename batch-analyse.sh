@@ -271,7 +271,10 @@ order() {
 
     # G_ORDER
     # Reference group
-    gmx order -f $traj_nw -nr $index_nw -s $structure_nw  -b $begin -n $tail_ndx -o "order_$tn" -os "sliced_$tn" -od "deuter_$tn" -dt $dt $unsat -sl 100 -calcdist
+    gmx order -f $traj_nw -nr $index_nw -s $structure_nw  -b $begin -n $tail_ndx -o "order_$tn" -od "deuter_$tn" -dt $dt $unsat
+    gmx order -f $traj_nw -nr $index_nw -s $structure_nw  -b $begin -n $tail_ndx -os "sliced_$tn" -dt $dt $unsat -sl 100 -szonly
+    rm order.xvg
+    
 
   done
 
@@ -309,26 +312,18 @@ order() {
 sas() {
 
   # settings
-  group_list=(POPC CERA LBPA SM16 CHOL Membrane)
+  group_list=(POPC DPPC CERA LBPA SM16 CHOL Membrane)
   ref_group="Membrane"
   workdir=sas
 
   mkdir -p $workdir
   cd $workdir
 
-  # build target group array
-  groups=()
-  for g in ${group_list[@]}; do
-    if [[ $(grep " $g " $index) ]]; then
-      groups+=("$g")
-    fi
-  done
-
   for group in  ${groups[@]}; do
-
-    # gmx sasa
-     sem -j $maxjobs gmx sasa -f $traj_nw -n $index_nw -s $structure_nw -o $group-area.xvg -or $group-resarea.xvg -oa $group-atomarea.xvg -tv $group-volume.xvg -q $group-connelly.pdb -surface $ref_group -output $group  -dt 1000 
-
+    if [[ $(grep " $group " $index_nw) ]]; then
+      # gmx sasa
+      sem -j $maxjobs gmx sasa -f $traj_nw -n $index_nw -s $structure_nw -o $group-area.xvg -or $group-resarea.xvg -oa $group-atomarea.xvg -tv $group-volume.xvg -q $group-connelly.pdb -surface $ref_group -output $group  -dt 1000 
+    fi
   done
 
   cd ..
@@ -527,7 +522,7 @@ densmap() {
   mkdir -p $workdir
   cd $workdir
 
-  for group in POPC CHOL CERA SM16 LBPA FepCHOL FepCHOL_C3 FepCHOL_C17; do
+  for group in POPC CHOL CERA SM16 LBPA FepCHOL CHOL_C3 CHOL_C17 FepCHOL_C3 FepCHOL_C17; do
     echo $group | gmx densmap -f $traj -s $structure -n $index -b $begin -bin 0.2 -unit nm-2 -o $group.xpm #-od $group.dat
     gmx xpm2ps -f $group.xpm -rainbow blue -o $group.eps
   done
@@ -552,7 +547,7 @@ densmap_fep() {
 
   e=$tmax
   b=$begin
-  for group in POPC CHOL CERA SM16 LBPA FepCHOL FepCHOL_C3 FepCHOL_C17; do
+  for group in POPC CHOL CERA SM16 LBPA FepCHOL CHOL_C3 CHOL_C17 FepCHOL_C3 FepCHOL_C17; do
     mkdir -p $group
     for l in {0..15}; do
       mkdir -p $group/$l
