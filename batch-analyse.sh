@@ -136,7 +136,7 @@ main() {
 #########################
 timestamp() {
   cptfile=$1
-  tmax_decimal=$(gmx check -f $cptfile  2>&1 | grep "Last frame" | awk '{print $5}')
+  tmax_decimal=$(gmx check -f $cptfile  2>&1 | grep "Last frame" | awk '{print $NF}')
   tmax=$(echo $tmax_decimal/1 | bc) # decimal to integer
   echo $tmax
 }
@@ -184,94 +184,102 @@ rms() {
 order() {
 
   # settings
-  tailnames=("POPC_SN1" "POPC_SN2" "POPC_SN2_unsat" "DPPC_SN1" "DPPC_SN2" "SM16_1" "SM16_1_unsat" "SM16_2")
+  tailnames=("POPC_SN1" "POPC_SN2" "DPPC_SN1" "DPPC_SN2" "SM16_1" "SM16_2")
   workdir=order
+  block=10000
+  lastframe=$(timestamp $traj)
 
   mkdir -p $workdir
   cd $workdir
 
+  # Tail atoms
   for tn in ${tailnames[@]}; do
 
-    # TAIL ATOMS
     case $tn in
       "POPC_SN1")
-	tail=(C31 C32 C33 C34 C35 C36 C37 C38 C39 C310 C311 C312 C313 C314 C315 C316)
-	resname=POPC
-	unsat="-nounsat"
+	atoms=(C31 C32 C33 C34 C35 C36 C37 C38 C39 C310 C311 C312 C313 C314 C315 C316)
+	unsat=""
 	;;
       "POPC_SN2")
-	tail=(C21 C22 C23 C24 C25 C26 C27 C28 C29 C210 C211 C212 C213 C214 C215 C216 C217 C218)
-	resname=POPC
-	unsat="-nounsat"
-	;;
-      "POPC_SN2_unsat")
-	tail=(C28 C29 C210 C211)
-	resname=POPC
-	unsat="-unsat"
+	atoms=(C21 C22 C23 C24 C25 C26 C27 C28 C29 C210 C211 C212 C213 C214 C215 C216 C217 C218)
+	unsat="9 10"
 	;;
       "SM16_1")
-	tail=(C1 C2 C21 C22 C23 C24 C25 C26 C27 C28 C29 C210 C211 C212 C213 C214 C215 C216)
-	resname=SM16
-	unsat="-nounsat"
-	;;
-      "SM16_1_unsat")
-	tail=(C21 C22 C23 C24)
-	resname=SM16
-	unsat="-nounsat"
+	atoms=(C1 C2 C21 C22 C23 C24 C25 C26 C27 C28 C29 C210 C211 C212 C213 C214 C215 C216)
+	unsat="4 5"
 	;;
       "SM16_2")
-	tail=(C31 C32 C33 C34 C35 C36 C37 C38 C39 C310 C311 C312 C313 C314 C315 C316)
-	resname=SM16
-	unsat="-nounsat"
+	atoms=(C31 C32 C33 C34 C35 C36 C37 C38 C39 C310 C311 C312 C313 C314 C315 C316)
+	unsat=""
 	;;
       *)
 	echo "ERROR: Unknown tail"
 	continue
 	;;
+
     esac
 
+
+    # Does residue exist?
+    resname=$(echo $tn | cut -d "_" -f 1)
     if [[ ! $(grep " $resname " $index) ]]; then
       continue
     fi
 
+    # create dir for this tail
+    mkdir -p $tn
+    cd $tn
 
-    # BUILD INDEX FILE
+    # Create index file for tail
     select=""
-    for atom in ${tail[@]}; do
+    for atom in ${atoms[@]}; do
       select="$select name $atom and resname $resname;"
     done
-
-    tail_ndx="${tn}.ndx"
-    gmx select -s $structure -select "$select" -on $tail_ndx
+    gmx select -s $structure -select "$select" -on tailatoms.ndx
 
 
-    # G_ORDER
-    # Reference group
-    gmx order -f $traj-nr $index -s $structure  -b $begin -n $tail_ndx -o "order_$tn" -od "deuter_$tn" -dt $dt $unsat
-    gmx order -f $traj -nr $index -s $structure  -b $begin -n $tail_ndx -os "sliced_$tn" -dt $dt $unsat -sl 100 -szonly
-    rm order.xvg
+    # loop blocks
+    b=1
+    while [[ $b -lt $lastframe ]]; do
+
+      let e=$b+${block}-1
+      mkdir $b-$e
+
+      gmx order -f $traj -nr $index -s $structure  -b $b -e $e -n tailatoms.ndx -o $b-$e/order.xvg -od $b-$e/deuter.xvg -dt $dt
+      gmx order -f $traj -nr $index -s $structure  -b $b -e $e -n tailatoms.ndx -os $b-$e/sliced.xvg -dt $dt -sl 100 -szonly
+      rm order.xvg
+
+      if [[ -z $unsat ]]; then
+	# just fix atom numbering
+	xvg_fixdeuter.py -f $b-$e/deuter.xvg -o $b-$e/deuter_fixed.xvg
+      else
+	gmx order -f $traj -nr $index -s $structure  -b $b -e $e -n tailatoms.ndx -o $b-$e/order_unsat.xvg -od $b-$e/deuter_unsat.xvg -dt $dt -unsat
+	gmx order -f $traj -nr $index -s $structure  -b $b -e $e -n tailatoms.ndx -os $b-$e/sliced_unsat.xvg -dt $dt -sl 100 -szonly -unsat
+	rm order.xvg
+	# merge saturated and unstaturated, and fix atom numbering
+	xvg_fixdeuter.py -f $b-$e/deuter.xvg -u $b-$e/deuter_unsat.xvg -a $unsat -o $b-$e/deuter_fixed.xvg 
+      fi
+
+      let b=$b+$block
+
+    done
+
+    # compute averages
+    allfiles=$(find -name deuter_fixed.xvg | sort -t / -k2nr)
+    filelist=""
+    for f in $allfiles; do
+      filelist="$filelist $f"
+      time1=$(echo $f | cut -d "/" -f2 | cut -d "-" -f1)
+      time2=$(echo $filelist | cut -d "/" -f2 | cut -d "-" -f2)
+      average-xvg.py -o ${time1}-${time2}_deuter_fixed.xvg $filelist
+    done
+
+
+    cd .. # from tn
     
+  done 
 
-  done
-
-
-  # merge saturated/unsaturated atoms and fix atom numbers
-  if [[ -f deuter_POPC_SN1.xvg && -f deuter_POPC_SN2.xvg ]]; then
-    xvg_fixdeuter.py -f deuter_POPC_SN1.xvg -o deuter_POPC_SN1_fixed.xvg
-    xvg_fixdeuter.py -f deuter_POPC_SN2.xvg -o deuter_POPC_SN2_fixed.xvg -u deuter_POPC_SN2_unsat.xvg -a 9 10
-  fi
-
-  if [[ -f deuter_DPPC_SN1.xvg && -f deuter_DPPC_SN2.xvg ]]; then
-    xvg_fixdeuter.py -f deuter_DPPC_SN1.xvg -o deuter_DPPC_SN1_fixed.xvg
-    xvg_fixdeuter.py -f deuter_DPPC_SN2.xvg -o deuter_DPPC_SN2_fixed.xvg 
-  fi
-
-  if [[ -f deuter_SM16_1.xvg && -f deuter_SM16_2.xvg ]]; then
-    xvg_fixdeuter.py -f deuter_SM16_1.xvg -o deuter_SM16_1_fixed.xvg -u deuter_SM16_1_unsat.xvg -a 4 5
-    xvg_fixdeuter.py -f deuter_SM16_2.xvg -o deuter_SM16_2_fixed.xvg
-  fi
-
-  cd ..
+  cd .. # from workdir
 }
 
 
