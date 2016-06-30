@@ -162,6 +162,16 @@ main() {
 
 
 
+#########################
+# timestamp of cpt file #
+#########################
+timestamp() {
+  cptfile=$1
+  tmax_decimal=$(gmx check -f $cptfile  2>&1 | grep "Last frame" | awk '{print $5}')
+  tmax=$(echo $tmax_decimal/1 | bc) # decimal to integer
+  echo $tmax
+}
+
 
 
 
@@ -395,8 +405,7 @@ bar() {
   cd $workdir
 
   # last frame
-  tmax_decimal=$(gmx check -f ${fepdir}/lambda0/state.cpt  2>&1 | grep "Last frame" | awk '{print $5}')
-  tmax=$(echo $tmax_decimal/1 | bc) # decimal to integer
+  tmax=$(timestamp ${fepdir}/lambda0/state.cpt)
   echo "Last frame = $tmax"
 
   # create list of dhdl files
@@ -541,8 +550,7 @@ densmap_fep() {
   cd $workdir
 
   # last frame
-  tmax_decimal=$(gmx check -f ${fepdir}/lambda0/state.cpt  2>&1 | grep "Last frame" | awk '{print $5}')
-  tmax=$(echo $tmax_decimal/1 | bc) # decimal to integer
+  tmax=$(timestamp ${fepdir}/lambda0/state.cpt)
   echo "Last frame = $tmax"
 
   e=$tmax
@@ -558,6 +566,55 @@ densmap_fep() {
 
   cd ..
 }
+
+
+############
+# CONTACTS #
+############
+contacts() {
+
+  # settings
+  workdir=contacts
+  distance=0.2
+  refgroup=CHOL
+  groups=(POPC DPPC CERA SM16 LBPA)
+
+  mkdir -p $workdir
+  cd $workdir
+
+  for group in ${groups[@]}; do
+    if [[ $(grep "\[ $group \]" $index) ]]; then
+      echo "$refgroup $group" | sem -j 6 gmx mindist -f $traj -n $index -s $structure -on numcount_$group -od mindist_$group -d $distance
+    fi
+  done
+
+  cd ..
+}
+
+
+#######
+# RDF #
+#######
+rdf() {
+
+  # settings
+  workdir=rdf
+  bin=0.02
+  refgroup=CHOL
+  groups=(POPC DPPC CERA SM16 LBPA)
+
+  mkdir -p $workdir
+  cd $workdir
+
+  for group in ${groups[@]}; do
+    if [[ $(grep "\[ $group \]" $index) ]]; then
+      sem -j 6 gmx rdf -f $traj -b $begin -n $index -s $structure -bin $bin -ref $refgroup -sel $group -xy -o $group.xvg
+    fi
+  done
+
+  cd ..
+}
+
 
 
 
