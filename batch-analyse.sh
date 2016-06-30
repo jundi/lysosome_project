@@ -274,6 +274,10 @@ order() {
       average-xvg.py -o ${time1}-${time2}_deuter_fixed.xvg $filelist
     done
 
+    # join blocks to one file
+    allfiles=$(find -name deuter_fixed.xvg | sort -t / -k2n)
+    join-xvg.py -l -o deuter_fixed_blocks.xvg $allfiles
+
 
     cd .. # from tn
     
