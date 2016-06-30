@@ -9,11 +9,8 @@ Example: \n
 \n
 Options: \n
 \t-n \t index.ndx \n
-\t-nn \t index_nowater.ndx \n
 \t-s \t topol.tpr \n
-\t-sn \t topol_nowater.tpr \n
 \t-f \t traj.xtc \n
-\t-fn \t traj_nowater.xtc \n
 \t-e \t ener.edr\n
 \t-b \t first frame to use (ps) \n
 \t-dt \t skip frames \n
@@ -46,11 +43,6 @@ structure=$(readlink -f ../npt/topol.tpr)
 index=$(readlink -f ../index.ndx)
 edr=$(readlink -f ../npt/ener.edr)
 fepdir=$(readlink -f ../free_energy/prod)
-# input files without water (used when water molecules are not needed for
-# analysis)
-traj_nw=""
-structure_nw=""
-index_nw=""
 # other parameters
 begin=0   # first timestep to be used
 dt=-1     # skip frames
@@ -80,24 +72,12 @@ while [[ $# -gt 0 ]]; do
       structure=$(readlink -f $2)
       shift
       ;;
-    -sn)
-      structure_nw=$(readlink -f $2)
-      shift
-      ;;
     -f)
       traj=$(readlink -f $2)
       shift
       ;;
-    -fn)
-      traj_nw=$(readlink -f $2)
-      shift
-      ;;
     -n)
       index=$(readlink -f $2)
-      shift
-      ;;
-    -nn)
-      index_nw=$(readlink -f $2)
       shift
       ;;
     -e)
@@ -120,7 +100,7 @@ while [[ $# -gt 0 ]]; do
       fepdir=$(readlink -f $2)
       shift
       ;;
-    order|rms|sas|box|density|bar|dist|dist_fep|msd|densmap|densmap_fep)
+    order|rms|sas|box|density|bar|dist|dist_fep|msd|densmap|densmap_fep|rdf)
       tasks+=("$1")
       ;;
     *)
@@ -130,17 +110,6 @@ while [[ $# -gt 0 ]]; do
   esac
   shift       
 done
-
-# if non-water input files are not given, use input files with water
-if [[ -z $traj_nw ]]; then
-  traj_nw=$traj
-fi
-if [[ -z $structure_nw ]]; then
-  structure_nw=$structure
-fi
-if [[ -z $index_nw ]]; then
-  index_nw=$index
-fi
 
 
 
@@ -200,10 +169,7 @@ rms() {
   ng=$(echo $groups | wc -w)
 
   # g_rms
-  echo "$ref_group $groups" | sem -j $maxjobs gmx rms -f $traj_nw -n $index_nw -s $structure_nw -ng $ng -what rmsd  -dt $dt 
-
-  # wait until other jobs finish
-  waitjobs
+  echo "$ref_group $groups" | sem -j $maxjobs gmx rms -f $traj -n $index -s $structure -ng $ng -what rmsd  -dt $dt 
 
   cd ..
 }
@@ -276,13 +242,13 @@ order() {
     done
 
     tail_ndx="${tn}.ndx"
-    gmx select -s $structure_nw -select "$select" -on $tail_ndx
+    gmx select -s $structure -select "$select" -on $tail_ndx
 
 
     # G_ORDER
     # Reference group
-    gmx order -f $traj_nw -nr $index_nw -s $structure_nw  -b $begin -n $tail_ndx -o "order_$tn" -od "deuter_$tn" -dt $dt $unsat
-    gmx order -f $traj_nw -nr $index_nw -s $structure_nw  -b $begin -n $tail_ndx -os "sliced_$tn" -dt $dt $unsat -sl 100 -szonly
+    gmx order -f $traj-nr $index -s $structure  -b $begin -n $tail_ndx -o "order_$tn" -od "deuter_$tn" -dt $dt $unsat
+    gmx order -f $traj -nr $index -s $structure  -b $begin -n $tail_ndx -os "sliced_$tn" -dt $dt $unsat -sl 100 -szonly
     rm order.xvg
     
 
@@ -330,9 +296,9 @@ sas() {
   cd $workdir
 
   for group in  ${groups[@]}; do
-    if [[ $(grep " $group " $index_nw) ]]; then
+    if [[ $(grep " $group " $index) ]]; then
       # gmx sasa
-      sem -j $maxjobs gmx sasa -f $traj_nw -n $index_nw -s $structure_nw -o $group-area.xvg -or $group-resarea.xvg -oa $group-atomarea.xvg -tv $group-volume.xvg -q $group-connelly.pdb -surface $ref_group -output $group  -dt 1000 
+      sem -j $maxjobs gmx sasa -f $traj -n $index -s $structure -o $group-area.xvg -or $group-resarea.xvg -oa $group-atomarea.xvg -tv $group-volume.xvg -q $group-connelly.pdb -surface $ref_group -output $group  -dt 1000 
     fi
   done
 
@@ -372,7 +338,7 @@ density() {
   # build target group string
   groups=""
   for g in ${group_list[@]}; do
-    if [[ $(grep " $g " $index_nw) ]]; then
+    if [[ $(grep " $g " $index) ]]; then
       groups="${groups} ${g}"
     fi
   done
@@ -380,11 +346,8 @@ density() {
   ng=$(echo $groups | wc -w)
 
   # gmx density
-  echo "$ref_group $groups" | sem -j $maxjobs gmx density -f $traj_nw -s $structure_nw -center -n $index_nw -ng $ng -b $begin -symm -sl $sl -dens $dens -o density_sl${sl}_${dens}.xvg
+  echo "$ref_group $groups" | sem -j $maxjobs gmx density -f $traj -s $structure -center -n $index -ng $ng -b $begin -symm -sl $sl -dens $dens -o density_sl${sl}_${dens}.xvg
  
-  # wait until other jobs finish
-  waitjobs
-
   cd ..
 }
 
