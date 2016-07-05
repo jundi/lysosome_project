@@ -12,4 +12,4 @@ module load gromacs-tut/5.1.2-avx
 
 export OMP_NUM_THREADS=1
 
-mpirun gmx_mpi mdrun -maxh 12 -dlb yes -cpi -replex 500 -multidir lambda[0-15] -npme 4
+mpirun gmx_mpi mdrun -maxh 12 -dlb yes -cpi -replex 500 -multidir lambda{0..15} -npme 4
