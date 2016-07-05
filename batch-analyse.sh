@@ -45,6 +45,7 @@ edr=$(readlink -f ../npt/ener.edr)
 fepdir=$(readlink -f ../free_energy/prod)
 # other parameters
 begin=0   # first timestep to be used
+block=10000   # first timestep to be used
 dt=-1     # skip frames
 maxjobs=4 # max parallel jobs
 
@@ -86,6 +87,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -b)
       begin="$2"
+      shift
+      ;;
+    -l)
+      block="$2"
       shift
       ;;
     -dt)
@@ -186,7 +191,6 @@ order() {
   # settings
   tailnames=("POPC_SN1" "POPC_SN2" "DPPC_SN1" "DPPC_SN2" "SM16_1" "SM16_2")
   workdir=order
-  block=10000
   lastframe=$(timestamp $traj)
 
   mkdir -p $workdir
@@ -358,7 +362,7 @@ density() {
   ng=$(echo $groups | wc -w)
 
   # gmx density
-  echo "$ref_group $groups" | sem -j $maxjobs gmx density -f $traj -s $structure -center -n $index -ng $ng -b $begin -symm -sl $sl -dens $dens -o density_sl${sl}_${dens}.xvg
+  echo "$ref_group $groups" | sem -j $maxjobs gmx density -f $traj -s $structure -center -n $index -ng $ng -b $begin -symm -sl $sl -dens $dens -o density_sl${sl}_${dens}.xvg -dt $dt
  
   cd ..
 }
@@ -373,8 +377,6 @@ bar() {
   # settings
   workdir=bar
   temp=310
-  b=1
-  tstep=2000
 
   mkdir -p $workdir
   cd $workdir
@@ -390,13 +392,14 @@ bar() {
   done
 
   # BAR
+  b=1
   while [[ $b -lt $tmax ]]; do
 
-    let e=$b+$tstep-1
+    let e=$b+$block-1
     for E in $tmax $e; do 
-      sem -j $maxjobs gmx bar -f $dhdl -o bar_$b-$E -oi barint_$b-$E -oh histogram_$b-$E -b $b -e $E 
+      sem -j $maxjobs gmx bar -f $dhdl -o bar_$b-$E -oi barint_$b-$E -oh histogram_$b-$E -b $b -e $E -dt $dt
     done
-    let b=$b+$tstep
+    let b=$b+$block
 
   done
 
@@ -430,7 +433,7 @@ dist() {
     mkdir -p $group
     select="group $group"
 
-    distance -s $structure -f $traj -n $index -oxyz $group/xyz.xvg -oz $group/z.xvg -oabsz $group/absz.xvg -ref "$ref" -select "$select"  -seltype "res_com"
+    distance -s $structure -f $traj -n $index -oxyz $group/xyz.xvg -oz $group/z.xvg -oabsz $group/absz.xvg -ref "$ref" -select "$select"  -seltype "res_com" -dt $dt
 
     average-xvg.py $group/absz.xvg -o $group/absz_average.xvg
   done
@@ -453,7 +456,7 @@ dist_fep() {
     for l in {0..15}; do
       mkdir -p $group/$l
 
-      distance -s ${fepdir}/lambda${l}/topol.tpr -f ${fepdir}/lambda${l}/traj_comp.xtc -n $index -oxyz $group/$l/xyz.xvg -oz $group/$l/z.xvg -oabsz $group/$l/absz.xvg -ref "$ref" -select "$select"  -seltype "res_com"
+      distance -s ${fepdir}/lambda${l}/topol.tpr -f ${fepdir}/lambda${l}/traj_comp.xtc -n $index -oxyz $group/$l/xyz.xvg -oz $group/$l/z.xvg -oabsz $group/$l/absz.xvg -ref "$ref" -select "$select"  -seltype "res_com" -dt $dt
       average-xvg.py $group/$l/absz.xvg -o $group/$l/absz_average.xvg
 
     done
@@ -485,7 +488,7 @@ msd() {
     echo $group
     if [[ $(grep "\[ $group \]" $index) ]]; then
       mkdir -p $group
-      echo "$group" | sem -j $maxjobs gmx msd -trestart 100 -lateral z -f $traj -n $index -s $structure -b $begin -o $group/msd_b${begin}.xvg -mol $group/diff_b${begin}
+      echo "$group" | sem -j $maxjobs gmx msd -trestart 100 -lateral z -f $traj -n $index -s $structure -b $begin -o $group/msd_b${begin}.xvg -mol $group/diff_b${begin} -dt $dt
     fi
 
   done
@@ -507,7 +510,7 @@ densmap() {
   cd $workdir
 
   for group in POPC CHOL CERA SM16 LBPA FepCHOL CHOL_C3 CHOL_C17 FepCHOL_C3 FepCHOL_C17; do
-    echo $group | gmx densmap -f $traj -s $structure -n $index -b $begin -bin 0.2 -unit nm-2 -o $group.xpm #-od $group.dat
+    echo $group | gmx densmap -f $traj -s $structure -n $index -b $begin -bin 0.2 -unit nm-2 -o $group.xpm  -dt $dt #-od $group.dat
     gmx xpm2ps -f $group.xpm -rainbow blue -o $group.eps
   done
 
@@ -534,7 +537,7 @@ densmap_fep() {
     mkdir -p $group
     for l in {0..15}; do
       mkdir -p $group/$l
-      echo $group | gmx densmap -f ${fepdir}/lambda${l}/traj_comp.xtc -s ${fepdir}/lambda${l}/topol.tpr -n $index -b $begin -bin 0.2 -unit nm-2 -o $group/$l/$b-$e.xpm #-od $group.dat
+      echo $group | gmx densmap -f ${fepdir}/lambda${l}/traj_comp.xtc -s ${fepdir}/lambda${l}/topol.tpr -n $index -b $begin -bin 0.2 -unit nm-2 -o $group/$l/$b-$e.xpm -dt $dt #-od $group.dat
       gmx xpm2ps -f $group/$l/$b-$e.xpm -rainbow blue -o $group/$l/$b-$e.eps
     done
   done
@@ -559,7 +562,7 @@ contacts() {
 
   for group in ${groups[@]}; do
     if [[ $(grep "\[ $group \]" $index) ]]; then
-      echo "$refgroup $group" | sem -j 6 gmx mindist -f $traj -n $index -s $structure -on numcount_$group -od mindist_$group -d $distance
+      echo "$refgroup $group" | sem -j 6 gmx mindist -f $traj -n $index -s $structure -on numcount_$group -od mindist_$group -d $distance -dt $dt
     fi
   done
 
@@ -583,7 +586,7 @@ rdf() {
 
   for group in ${groups[@]}; do
     if [[ $(grep "\[ $group \]" $index) ]]; then
-      sem -j 6 gmx rdf -f $traj -b $begin -n $index -s $structure -bin $bin -ref $refgroup -sel $group -xy -o $group.xvg
+      sem -j 6 gmx rdf -f $traj -b $begin -n $index -s $structure -bin $bin -ref $refgroup -sel $group -xy -o $group.xvg -dt $dt
     fi
   done
 
