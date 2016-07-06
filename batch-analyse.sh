@@ -304,17 +304,17 @@ order() {
 sas() {
 
   # settings
-  group_list=(POPC DPPC CERA LBPA SM16 CHOL Membrane)
+  groups=(POPC DPPC CERA LBPA SM16 CHOL Membrane)
   ref_group="Membrane"
   workdir=sas
 
   mkdir -p $workdir
   cd $workdir
 
-  for group in  ${groups[@]}; do
+  for group in ${groups[@]}; do
     if [[ $(grep " $group " $index) ]]; then
       # gmx sasa
-      sem -j $maxjobs gmx sasa -f $traj -n $index -s $structure -o $group-area.xvg -or $group-resarea.xvg -oa $group-atomarea.xvg -tv $group-volume.xvg -q $group-connelly.pdb -surface $ref_group -output $group  -dt 1000 
+      sem -j $maxjobs gmx sasa -f $traj -n $index -s $structure -o $group-area.xvg -or $group-resarea.xvg -oa $group-atomarea.xvg -tv $group-volume.xvg -q $group-connelly.pdb -surface $ref_group -output $group  -dt $dt
     fi
   done
 
@@ -329,7 +329,16 @@ sas() {
 # BOX #
 #######
 box() {
+
+  workdir=box
+
+  mkdir -p $workdir
+  cd $workdir
+
   echo -e "Box-X\n Box-Y\n Box-Z" | gmx energy -f $edr -o box.xvg 
+  xvg_runningmean.py -f box.xvg -n 100
+
+  cd ..
 }
 
 
@@ -344,7 +353,7 @@ density() {
   # settings
   ref_group="Membrane"
   group_list=("POPC" "CHOL" "CHOL_C3" "CHOL_C17" "LBPA" "CERA" "SM16")
-  workdir=gmx density
+  workdir=density
   sl=100 #slices
   dens="number"
 
@@ -397,7 +406,7 @@ bar() {
 
     let e=$b+$block-1
     for E in $tmax $e; do 
-      sem -j $maxjobs gmx bar -f $dhdl -o bar_$b-$E -oi barint_$b-$E -oh histogram_$b-$E -b $b -e $E -dt $dt
+      sem -j $maxjobs gmx bar -f $dhdl -o bar_$b-$E -oi barint_$b-$E -oh histogram_$b-$E -b $b -e $E 
     done
     let b=$b+$block
 
