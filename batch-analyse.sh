@@ -174,7 +174,7 @@ rms() {
   ng=$(echo $groups | wc -w)
 
   # g_rms
-  echo "$ref_group $groups" | sem -j $maxjobs gmx rms -f $traj -n $index -s $structure -ng $ng -what rmsd  -dt $dt 
+  echo "$ref_group $groups" | sem -j $maxjobs "gmx rms -f $traj -n $index -s $structure -ng $ng -what rmsd -dt $dt; xvg_runningmean.py -f rmsd.xvg -n 10"
 
   cd ..
 }
@@ -189,7 +189,7 @@ rms() {
 order() {
 
   # settings
-  tailnames=("POPC_SN1" "POPC_SN2" "DPPC_SN1" "DPPC_SN2" "SM16_1" "SM16_2")
+  tailnames=("POPC_SN1" "POPC_SN2" "DPPC_SN1" "DPPC_SN2" "SM16_1" "SM16_2" "CERA_1" "CERA_2" "LBPA_1" "LBPA_2")
   workdir=order
   lastframe=$(timestamp $traj)
 
@@ -216,11 +216,34 @@ order() {
 	atoms=(C31 C32 C33 C34 C35 C36 C37 C38 C39 C310 C311 C312 C313 C314 C315 C316)
 	unsat=""
 	;;
+      "CERA_1")
+	atoms=(C1 C2 C21 C22 C23 C24 C25 C26 C27 C28 C29 C210 C211 C212 C213 C214 C215 C216)
+	unsat="4 5"
+	;;
+      "CERA_2")
+	atoms=(C31 C32 C33 C34 C35 C36 C37 C38 C39 C310 C311 C312 C313 C314 C315 C316)
+	unsat=""
+	;;
+      "DPPC_SN1")
+	atoms=(C31 C32 C33 C34 C35 C36 C37 C38 C39 C310 C311 C312 C313 C314 C315 C316)
+	unsat=""
+	;;
+      "DPPC_SN2")
+	atoms=(C21 C22 C23 C24 C25 C26 C27 C28 C29 C210 C211 C212 C213 C214 C215 C216)
+	unsat=""
+	;;
+      "LBPA_1")
+	atoms=(C21 C22 C23 C24 C25 C26 C27 C28 C29 C210 C211 C212 C213 C214 C215 C216 C217 C218)
+	unsat="9 10"
+	;;
+      "LBPA_2")
+	atoms=(C21\' C22\' C33 C34 C35 C36 C37 C38 C39 C310 C311 C312 C313 C314 C315 C316 C317 C318)
+	unsat="9 10"
+	;;
       *)
 	echo "ERROR: Unknown tail"
 	continue
 	;;
-
     esac
 
 
