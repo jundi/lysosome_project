@@ -148,6 +148,19 @@ timestamp() {
 
 
 
+##########################
+# make working directory #
+##########################
+mkwrkdir() {
+  wrkdir=$1
+  if [[ -e $wrkdir ]]; then
+    mv $wrkdir ${wrkdir}_backup_$(date +"%Y%m%d_%H%M%S")
+  fi
+  mkdir -p $wrkdir
+}
+
+
+
 
 
 ########
@@ -193,7 +206,7 @@ order() {
   workdir=order
   lastframe=$(timestamp $traj)
 
-  mkdir -p $workdir
+  mkwrkdir $workdir
   cd $workdir
 
   # Tail atoms
@@ -260,7 +273,7 @@ order() {
     # Create index file for tail
     select=""
     for atom in ${atoms[@]}; do
-      select="$select name $atom and resname $resname;"
+      select="$select name \"$atom\" and resname $resname;"
     done
     gmx select -s $structure -select "$select" -on tailatoms.ndx
 
@@ -312,9 +325,6 @@ order() {
 
   cd .. # from workdir
 }
-
-
-
 
 
 
