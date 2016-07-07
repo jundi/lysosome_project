@@ -173,7 +173,7 @@ rms() {
   group_list=("CHOL" "POPC" "LBPA" "CERA" "SM16")
   workdir=rms
 
-  mkdir -p $workdir
+  mkwrkdir $workdir
   cd $workdir
 
   # build target group string
@@ -341,7 +341,7 @@ sas() {
   ref_group="Membrane"
   workdir=sas
 
-  mkdir -p $workdir
+  mkwrkdir $workdir
   cd $workdir
 
   for group in ${groups[@]}; do
@@ -365,7 +365,7 @@ box() {
 
   workdir=box
 
-  mkdir -p $workdir
+  mkwrkdir $workdir
   cd $workdir
 
   echo -e "Box-X\n Box-Y\n Box-Z" | gmx energy -f $edr -o box.xvg 
@@ -390,7 +390,7 @@ density() {
   sl=100 #slices
   dens="number"
 
-  mkdir -p $workdir
+  mkwrkdir $workdir
   cd $workdir
 
   # build target group string
@@ -420,7 +420,7 @@ bar() {
   workdir=bar
   temp=310
 
-  mkdir -p $workdir
+  mkwrkdir $workdir
   cd $workdir
 
   # last frame
@@ -468,7 +468,7 @@ dist() {
   workdir=dist
   ref="com of group Membrane"
 
-  mkdir -p $workdir
+  mkwrkdir $workdir
   cd $workdir
 
   for group in CHOL FepCHOL CHOL_C3 CHOL_C17 FepCHOL_C3 FepCHOL_C17; do
@@ -489,7 +489,7 @@ dist_fep() {
   workdir=dist_fep
   ref="com of group Membrane"
 
-  mkdir -p $workdir
+  mkwrkdir $workdir
   cd $workdir
 
   for group in CHOL FepCHOL CHOL_C3 CHOL_C17 FepCHOL_C3 FepCHOL_C17; do
@@ -523,7 +523,7 @@ msd() {
   # settings
   workdir=msd
 
-  mkdir -p $workdir
+  mkwrkdir $workdir
   cd $workdir
   for group in CHOL POPC LBPA DPPC SM16 CERA; do
 
@@ -548,7 +548,7 @@ densmap() {
   # settings
   workdir=densmap
 
-  mkdir -p $workdir
+  mkwrkdir $workdir
   cd $workdir
 
   for group in POPC CHOL CERA SM16 LBPA FepCHOL CHOL_C3 CHOL_C17 FepCHOL_C3 FepCHOL_C17; do
@@ -566,7 +566,7 @@ densmap_fep() {
   # settings
   workdir=densmap_fep
 
-  mkdir -p $workdir
+  mkwrkdir $workdir
   cd $workdir
 
   # last frame
@@ -599,7 +599,7 @@ contacts() {
   refgroup=CHOL
   groups=(POPC DPPC CERA SM16 LBPA)
 
-  mkdir -p $workdir
+  mkwrkdir $workdir
   cd $workdir
 
   for group in ${groups[@]}; do
@@ -623,7 +623,7 @@ rdf() {
   refgroup=CHOL
   groups=(POPC DPPC CERA SM16 LBPA)
 
-  mkdir -p $workdir
+  mkwrkdir $workdir
   cd $workdir
 
   for group in ${groups[@]}; do
