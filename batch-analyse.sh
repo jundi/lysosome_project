@@ -396,16 +396,21 @@ density() {
 
   lastframe=$(timestamp $traj)
   for group in ${groups[@]}; do
+
+    if ! [[ $(grep "\[ $group \]" $index) ]]; then
+      continue
+    fi
+
     mkdir -p $group
 
     b=1
     while [[ $b -lt $lastframe ]]; do
       let e=$b+${block}-1
       mkdir -p $group/$b-$e
-      echo "$ref_group $group" | sem -j $maxjobs gmx density -f $traj -s $structure -center -n $index -b $b -e $e -symm -sl $sl -dens $dens -o $group/$b-$e/density_sl${sl}_${dens}.xvg -dt $dt
+      echo "$ref_group $group" | gmx density -f $traj -s $structure -center -n $index -b $b -e $e -symm -sl $sl -dens $dens -o $group/$b-$e/density_sl${sl}_${dens}.xvg -dt $dt
       let b=$b+${block}
     done
-    sem --wait
+    #sem --wait
 
     # compute averages
     allfiles=$(find $group -name density_sl${sl}_${dens}.xvg | sort -t / -k2nr)
@@ -543,12 +548,19 @@ msd() {
 
   mkwrkdir $workdir
   cd $workdir
+
+  lastframe=$(timestamp $traj)
   for group in CHOL POPC LBPA DPPC SM16 CERA; do
 
-    echo $group
     if [[ $(grep "\[ $group \]" $index) ]]; then
       mkdir -p $group
-      echo "$group" | sem -j $maxjobs gmx msd -trestart 100 -lateral z -f $traj -n $index -s $structure -b $begin -o $group/msd_b${begin}.xvg -mol $group/diff_b${begin} -dt $dt
+
+      b=0
+      while [[ $b -lt $lastframe ]]; do
+	echo "$group" | sem -j $maxjobs gmx msd -trestart 100 -lateral z -f $traj -n $index -s $structure -b $b -o $group/msd_b${b}.xvg -mol $group/diff_b${b} 
+	let b=$b+$block
+      done
+      sem --wait
     fi
 
   done
