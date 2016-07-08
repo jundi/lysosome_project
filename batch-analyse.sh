@@ -385,7 +385,7 @@ density() {
 
   # settings
   ref_group="Membrane"
-  group_list=("POPC" "CHOL" "CHOL_C3" "CHOL_C17" "LBPA" "CERA" "SM16")
+  groups=("POPC" "CHOL" "CHOL_C3" "CHOL_C17" "LBPA" "CERA" "SM16" "DPPC")
   workdir=density
   sl=100 #slices
   dens="number"
@@ -393,20 +393,38 @@ density() {
   mkwrkdir $workdir
   cd $workdir
 
-  # build target group string
-  groups=""
-  for g in ${group_list[@]}; do
-    if [[ $(grep " $g " $index) ]]; then
-      groups="${groups} ${g}"
-    fi
-  done
-  echo "GROUPS: $groups"
-  ng=$(echo $groups | wc -w)
 
-  # gmx density
-  echo "$ref_group $groups" | sem -j $maxjobs gmx density -f $traj -s $structure -center -n $index -ng $ng -b $begin -symm -sl $sl -dens $dens -o density_sl${sl}_${dens}.xvg -dt $dt
- 
+  lastframe=$(timestamp $traj)
+  for group in ${groups[@]}; do
+    mkdir -p $group
+
+    b=1
+    while [[ $b -lt $lastframe ]]; do
+      let e=$b+${block}-1
+      mkdir -p $group/$b-$e
+      echo "$ref_group $group" | sem -j $maxjobs gmx density -f $traj -s $structure -center -n $index -b $b -e $e -symm -sl $sl -dens $dens -o $group/$b-$e/density_sl${sl}_${dens}.xvg -dt $dt
+      let b=$b+${block}
+    done
+    sem --wait
+
+    # compute averages
+    allfiles=$(find $group -name density_sl${sl}_${dens}.xvg | sort -t / -k2nr)
+    filelist=""
+    for f in $allfiles; do
+      filelist="$filelist $f"
+      time1=$(echo $f | cut -d "/" -f2 | cut -d "-" -f1)
+      time2=$(echo $filelist | cut -d "/" -f2 | cut -d "-" -f2)
+      average-xvg.py -o $group/${time1}-${time2}_density_sl${sl}_${dens}.xvg $filelist
+    done
+
+    # join blocks to one file
+    allfiles=$(find $group -name density_sl${sl}_${dens}.xvg | sort -t / -k2n)
+    join-xvg.py -l -o $group/density_sl${sl}_${dens}.xvg $allfiles
+
+  done
+
   cd ..
+
 }
 
 
