@@ -458,22 +458,36 @@ bar() {
 
   # BAR
   b=1
-  while [[ $b -lt $tmax ]]; do
+  let e=$b+$block-1
+  blocklist=""
+  while [[ $e -lt $tmax ]]; do
 
-    let e=$b+$block-1
+    blocklist="$b-$e/barint.xvg $blocklist"
+
     for E in $tmax $e; do 
-      sem -j $maxjobs gmx bar -f $dhdl -o bar_$b-$E -oi barint_$b-$E -oh histogram_$b-$E -b $b -e $E 
+      mkdir -p $b-$E
+      sem -j $maxjobs gmx bar -f $dhdl -o $b-$E/bar.xvg -oi $b-$E/barint.xvg -oh $b-$E/histogram.xvg -b $b -e $E 
     done
+
     let b=$b+$block
+    let e=$b+$block-1
 
   done
 
   # wait until other jobs finish
   sem --wait
 
-  # join
-  ls  barint_*000.xvg | sort -t _ -k2n | xargs join-xvg.py -l -o barint_blocks.xvg
-  ls  barint_*${tmax}.xvg | sort -t _ -k2n | xargs join-xvg.py -l -o barint.xvg
+  # join blocks to one file
+  join-xvg.py -l -o barint_blocks.xvg $blocklist
+
+  # block average
+  filelist=""
+  for f in $blocklist; do
+    filelist="$filelist $f"
+    time1=$(echo $f | cut -f 1 -d '-')
+    time2=$(echo $filelist | cut -f 2 -d '-' | cut -d / -f 1)
+    average-xvg.py -o barint_${time1}-${time2}.xvg $filelist
+  done
 
   # DEMUX
   demux.pl $fepdir/lambda0/md.log
@@ -494,7 +508,7 @@ dist() {
   mkwrkdir $workdir
   cd $workdir
 
-  for group in CHOL FepCHOL CHOL_C3 CHOL_C17 FepCHOL_C3 FepCHOL_C17; do
+  for group in CHOL FepCHOL CHOL_C3 CHOL_C17 FepCHOL_C3 FepCHOL_C17 POPC_P; do
     mkdir -p $group
     select="group $group"
 
