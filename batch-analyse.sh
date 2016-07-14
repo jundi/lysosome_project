@@ -1,9 +1,10 @@
 #!/bin/bash
+set -e
 
 #########################
 # list of possible tasks
 #########################
-task_options=(order rms sas box density bar dist dist_fep msd densmap densmap_fep rdf)
+task_options=(order rms sas box density bar dist dist_fep msd densmap densmap_fep rdf contacts rdf_test)
 
 
 #########
@@ -143,9 +144,9 @@ main() {
 # timestamp of cpt file #
 #########################
 timestamp() {
-  cptfile=$1
-  tmax_decimal=$(gmx check -f $cptfile  2>&1 | grep "Last frame" | awk '{print $NF}')
-  tmax=$(echo $tmax_decimal/1 | bc) # decimal to integer
+  local cptfile=$1
+  local tmax_decimal=$(gmx check -f $cptfile  2>&1 | grep "Last frame" | awk '{print $NF}')
+  local tmax=$(echo $tmax_decimal/1 | bc) # decimal to integer
   echo $tmax
 }
 
@@ -155,11 +156,62 @@ timestamp() {
 # make working directory #
 ##########################
 mkwrkdir() {
-  wrkdir=$1
+  local wrkdir=$1
   if [[ -e $wrkdir ]]; then
     mv $wrkdir ${wrkdir}_backup_$(date +"%Y%m%d_%H%M%S")
   fi
   mkdir -p $wrkdir
+}
+
+
+##########################
+# block average function #
+##########################
+block_average() {
+  cmd="$1"
+  local lastframe="$2"
+
+  echo "$cmd"
+  echo "$block"
+  echo "$lastframe"
+
+  local blocklist=""
+  local b=1
+  local e
+  let e=$b+$block-1
+  while [[ $e -le $lastframe ]]; do 
+    blocklist=(${b}-${e} ${blocklist[*]})
+    mkdir -p $b-$e
+    cd $b-$e
+
+    $cmd -b $b -e $e 
+
+    cd ..
+    let b=$b+$block
+    let e=$e+$block
+  done
+
+  sem --wait
+  local xvgfiles=$(find ${blocklist[0]} -name "*.xvg")
+  for x in $xvgfiles; do
+    local xname=$(basename $x)
+    echo $xname
+    local filelist=""
+    local avg_lastframe=$(echo ${blocklist[0]} | cut -d '-' -f 2)
+    echo $avg_lastframe
+    for b in ${blocklist[@]}; do
+      filelist="$b/${xname} $filelist"
+      echo $filelist
+      local avg_firstframe=$(echo ${b} | cut -d '-' -f 1)
+      echo $avg_firstframe
+      if [[ $(echo $filelist | wc -w) -gt 1 ]]; then
+	average-xvg.py -o ${avg_firstframe}-${avg_lastframe}_${xname} $filelist
+      fi
+    done
+  done
+
+  join-xvg.py -l -o blocks_${xname} $filelist
+
 }
 
 
@@ -676,9 +728,71 @@ rdf() {
   cd $workdir
 
   for group in ${groups[@]}; do
-    if [[ $(grep "\[ $group \]" $index) ]]; then
-      sem -j 6 gmx rdf -f $traj -b $begin -n $index -s $structure -bin $bin -ref $refgroup -sel $group -xy -o $group.xvg -dt $dt
+    if ! [[ $(grep "\[ $group \]" $index) ]]; then
+      continue
     fi
+
+    mkdir -p $group
+
+    b=1
+    lastframe=$(timestamp $traj)
+    blocklist=""
+    while [[ $b -lt $lastframe ]]; do
+
+      blocklist="${b} $blocklist"
+      let e=$b+${block}-1
+      mkdir -p $group/$b-$e
+
+      sem -j 6 gmx rdf -f $traj -b $b -e $e -n $index -s $structure -bin $bin -ref $refgroup -sel $group -xy -o $group/$b-$e/rdf.xvg -dt $dt
+
+      let b=$b+${block}
+    done
+
+    # block average
+    sem --wait
+    filelist=""
+    let E=${blocklist[0]}+${block}-1
+    for b in $blocklist; do
+      let e=$b+${block}-1
+      filelist="$filelist $group/$b-$e/rdf.xvg"
+      average-xvg.py -o ${group}/${b}-${E}_rdf.xvg $filelist
+    done
+
+    # merge blocks to one file
+    join-xvg.py -o ${group}/rdf_blocks.xvg $filelist
+
+
+  done
+
+  cd ..
+}
+
+
+rdf_test() {
+
+  # settings
+  workdir=rdf
+  bin=0.02
+  refgroup=CHOL
+  groups=(POPC DPPC CERA SM16 LBPA)
+
+  mkwrkdir $workdir
+  cd $workdir
+
+  for group in ${groups[@]}; do
+    if ! [[ $(grep "\[ $group \]" $index) ]]; then
+      continue
+    fi
+
+    mkdir -p $group
+    cd $group
+
+    lastframe=$(timestamp $traj)
+    cmd="gmx rdf -f $traj -n $index -s $structure -bin $bin -ref $refgroup -sel $group -xy -o rdf.xvg -dt $dt"
+    block_average "$cmd" $lastframe
+
+    cd ..
+
   done
 
   cd ..
