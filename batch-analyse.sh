@@ -168,23 +168,20 @@ mkwrkdir() {
 # block average function #
 ##########################
 block_average() {
-  cmd="$1"
+  local cmd="$1"
   local lastframe="$2"
-
-  echo "$cmd"
-  echo "$block"
-  echo "$lastframe"
 
   local blocklist=""
   local b=1
   local e
   let e=$b+$block-1
+
   while [[ $e -le $lastframe ]]; do 
     blocklist=(${b}-${e} ${blocklist[*]})
     mkdir -p $b-$e
     cd $b-$e
 
-    $cmd -b $b -e $e 
+    sem -j $maxjobs "$cmd -b $b -e $e"
 
     cd ..
     let b=$b+$block
@@ -195,15 +192,11 @@ block_average() {
   local xvgfiles=$(find ${blocklist[0]} -name "*.xvg")
   for x in $xvgfiles; do
     local xname=$(basename $x)
-    echo $xname
     local filelist=""
     local avg_lastframe=$(echo ${blocklist[0]} | cut -d '-' -f 2)
-    echo $avg_lastframe
     for b in ${blocklist[@]}; do
       filelist="$b/${xname} $filelist"
-      echo $filelist
       local avg_firstframe=$(echo ${b} | cut -d '-' -f 1)
-      echo $avg_firstframe
       if [[ $(echo $filelist | wc -w) -gt 1 ]]; then
 	average-xvg.py -o ${avg_firstframe}-${avg_lastframe}_${xname} $filelist
       fi
@@ -717,58 +710,6 @@ contacts() {
 # RDF #
 #######
 rdf() {
-
-  # settings
-  workdir=rdf
-  bin=0.02
-  refgroup=CHOL
-  groups=(POPC DPPC CERA SM16 LBPA)
-
-  mkwrkdir $workdir
-  cd $workdir
-
-  for group in ${groups[@]}; do
-    if ! [[ $(grep "\[ $group \]" $index) ]]; then
-      continue
-    fi
-
-    mkdir -p $group
-
-    b=1
-    lastframe=$(timestamp $traj)
-    blocklist=""
-    while [[ $b -lt $lastframe ]]; do
-
-      blocklist="${b} $blocklist"
-      let e=$b+${block}-1
-      mkdir -p $group/$b-$e
-
-      sem -j 6 gmx rdf -f $traj -b $b -e $e -n $index -s $structure -bin $bin -ref $refgroup -sel $group -xy -o $group/$b-$e/rdf.xvg -dt $dt
-
-      let b=$b+${block}
-    done
-
-    # block average
-    sem --wait
-    filelist=""
-    let E=${blocklist[0]}+${block}-1
-    for b in $blocklist; do
-      let e=$b+${block}-1
-      filelist="$filelist $group/$b-$e/rdf.xvg"
-      average-xvg.py -o ${group}/${b}-${E}_rdf.xvg $filelist
-    done
-
-    # merge blocks to one file
-    join-xvg.py -o ${group}/rdf_blocks.xvg $filelist
-
-
-  done
-
-  cd ..
-}
-
-
-rdf_test() {
 
   # settings
   workdir=rdf
