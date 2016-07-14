@@ -1,5 +1,18 @@
 #!/bin/bash
 
+#########################
+# list of possible tasks
+#########################
+task_options=(order rms sas box density bar dist dist_fep msd densmap densmap_fep rdf)
+
+
+#########
+# manual
+#########
+task_string=""
+for t in ${task_options[@]}; do
+  task_string="$task_string\t$t\n"
+done
 usage="\n
 Usage: \n
 \t$(basename $0) [OPTION...] [TASK1,TASK2,...] \n
@@ -18,20 +31,9 @@ Options: \n
 \t-fep \t FEP calculation directory\n
 \n
 Tasks: \n
-\torder \n
-\trms \n
-\tsas \n
-\tbox \n
-\tdensity \n
-\tbar \n
-\tdist \n
-\tdist_fep \n
-\tmsd\n
-\tdensmap \n
-\tdensmap_fep \n
+$task_string
 \n
 "
-
 
 
 ############
@@ -105,12 +107,13 @@ while [[ $# -gt 0 ]]; do
       fepdir=$(readlink -f $2)
       shift
       ;;
-    order|rms|sas|box|density|bar|dist|dist_fep|msd|densmap|densmap_fep|rdf)
-      tasks+=("$1")
-      ;;
     *)
-      echo -e $usage
-      exit 2
+      if [[ ${task_options[*]} =~ $1 ]]; then
+	tasks+=("$1")
+      else
+	echo -e $usage
+	exit 2
+      fi
       ;;
   esac
   shift       
@@ -509,14 +512,16 @@ dist() {
   cd $workdir
 
   for group in CHOL FepCHOL CHOL_C3 CHOL_C17 FepCHOL_C3 FepCHOL_C17 POPC_P; do
-    mkdir -p $group
-    select="group $group"
+    if [[ $(grep "\[ $group \]" $index) ]]; then
+      mkdir -p $group
+      select="group $group"
 
-    distance -s $structure -f $traj -n $index -oxyz $group/xyz.xvg -oz $group/z.xvg -oabsz $group/absz.xvg -ref "$ref" -select "$select"  -seltype "res_com" -dt $dt
+	distance -s $structure -f $traj -n $index -oxyz $group/xyz.xvg -oz $group/z.xvg -oabsz $group/absz.xvg -ref "$ref" -select "$select"  -seltype "res_com" -dt $dt
 
-    average-xvg.py $group/absz.xvg -o $group/absz_average.xvg
-  done
-  cd ..
+	average-xvg.py $group/absz.xvg -o $group/absz_average.xvg
+      fi
+    done
+    cd ..
 }
 
 
