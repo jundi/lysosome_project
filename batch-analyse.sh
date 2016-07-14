@@ -4,7 +4,7 @@ set -e
 #########################
 # list of possible tasks
 #########################
-task_options=(order rms sas box density bar dist dist_fep msd densmap densmap_fep rdf contacts rdf_test)
+task_options=(order rms sas box density bar dist dist_fep msd densmap densmap_fep rdf contacts)
 
 
 #########
@@ -697,9 +697,12 @@ contacts() {
   cd $workdir
 
   for group in ${groups[@]}; do
-    if [[ $(grep "\[ $group \]" $index) ]]; then
-      echo "$refgroup $group" | sem -j 6 gmx mindist -f $traj -n $index -s $structure -on numcount_$group -od mindist_$group -d $distance -dt $dt
+    if ! [[ $(grep "\[ $group \]" $index) ]]; then
+      continue
     fi
+
+    echo "$refgroup $group" | sem -j 6 gmx mindist -f $traj -n $index -s $structure -on numcount_$group -od mindist_$group -d $distance -dt $dt
+
   done
 
   cd ..
