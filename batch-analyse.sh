@@ -47,8 +47,7 @@ index=$(readlink -f ../index.ndx)
 edr=$(readlink -f ../npt/ener.edr)
 fepdir=$(readlink -f ../free_energy/prod)
 # other parameters
-begin=0   	# first timestep to be used
-block=10000	# first timestep to be used
+block=10000	# block size for block average
 dt=-1		# skip frames
 maxjobs=4	# max parallel jobs
 
@@ -89,10 +88,6 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -b)
-      begin="$2"
-      shift
-      ;;
-    -l)
       block="$2"
       shift
       ;;
@@ -637,9 +632,29 @@ densmap() {
   mkwrkdir $workdir
   cd $workdir
 
+  lastframe=$(timestamp $traj)
+
   for group in POPC CHOL CERA SM16 LBPA FepCHOL CHOL_C3 CHOL_C17 FepCHOL_C3 FepCHOL_C17; do
-    echo $group | gmx densmap -f $traj -s $structure -n $index -b $begin -bin 0.2 -unit nm-2 -o $group.xpm  -dt $dt #-od $group.dat
-    gmx xpm2ps -f $group.xpm -rainbow blue -o $group.eps
+    if ! [[ $(grep "\[ $group \]" $index) ]]; then
+      continue
+    fi
+
+    mkdir -p $group
+    cd $group
+
+    b=1
+    while [[ $b -lt $lastframe ]]; do
+      mkdir -p $b
+      cd $b
+
+      echo $group | gmx densmap -f $traj -s $structure -n $index -b $b -bin 0.2 -unit nm-2 -o densmap.xpm  -dt $dt #-od $group.dat
+      gmx xpm2ps -f densmap.xpm -rainbow blue -o densmap.eps
+
+      cd ..
+      let b=$b+$block
+    done
+
+    cd ..
   done
 
   cd ..
@@ -658,21 +673,40 @@ densmap_fep() {
   cd $workdir
 
   # last frame
-  tmax=$(timestamp ${fepdir}/lambda0/state.cpt)
-  echo "Last frame = $tmax"
+  lastframe=$(timestamp ${fepdir}/lambda0/state.cpt)
 
-  e=$tmax
   b=$begin
   for group in POPC CHOL CERA SM16 LBPA FepCHOL CHOL_C3 CHOL_C17 FepCHOL_C3 FepCHOL_C17; do
+    if ! [[ $(grep "\[ $group \]" $index) ]]; then
+      continue
+    fi
+
     mkdir -p $group
+    cd $group
+
     for l in {0..15}; do
-      mkdir -p $group/$l
-      echo $group | gmx densmap -f ${fepdir}/lambda${l}/traj_comp.xtc -s ${fepdir}/lambda${l}/topol.tpr -n $index -b $begin -bin 0.2 -unit nm-2 -o $group/$l/$b-$e.xpm -dt $dt #-od $group.dat
-      gmx xpm2ps -f $group/$l/$b-$e.xpm -rainbow blue -o $group/$l/$b-$e.eps
+      mkdir -p $l
+      cd $l
+
+      b=1
+      while [[ $b -lt $lastframe ]]; do
+	mkdir -p $b
+	cd $b
+
+	echo $group | gmx densmap -f ${fepdir}/lambda${l}/traj_comp.xtc -s ${fepdir}/lambda${l}/topol.tpr -n $index -b $b -bin 0.2 -unit nm-2 -o $group/$l/$b-$e.xpm -dt $dt #-od $group.dat
+	gmx xpm2ps -f $group/$l/$b-$e.xpm -rainbow blue -o $group/$l/$b-$e.eps
+
+	cd .. #b
+	let b=$b+$block
+      done
+
+      cd .. #l
     done
+
+    cd .. #group
   done
 
-  cd ..
+  cd .. # workdir
 }
 
 
