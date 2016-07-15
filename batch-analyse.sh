@@ -47,10 +47,10 @@ index=$(readlink -f ../index.ndx)
 edr=$(readlink -f ../npt/ener.edr)
 fepdir=$(readlink -f ../free_energy/prod)
 # other parameters
-begin=0   # first timestep to be used
-block=10000   # first timestep to be used
-dt=-1     # skip frames
-maxjobs=4 # max parallel jobs
+begin=0   	# first timestep to be used
+block=10000	# first timestep to be used
+dt=-1		# skip frames
+maxjobs=4	# max parallel jobs
 
 
 ####################
