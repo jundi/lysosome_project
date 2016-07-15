@@ -1,15 +1,15 @@
 #!/bin/bash
 set -e
 
-#########################
-# list of possible tasks
-#########################
+##########################
+# list of possible tasks #
+##########################
 task_options=(order rms sas box density bar dist dist_fep msd densmap densmap_fep rdf contacts)
 
 
-#########
-# manual
-#########
+##########
+# manual #
+##########
 task_string=""
 for t in ${task_options[@]}; do
   task_string="$task_string\t$t\n"
@@ -122,9 +122,11 @@ done
 
 
 
-########
-# main #
-########
+####################
+# Helper functions #
+####################
+#------
+# Main
 main() {
 
   for task in ${tasks[@]} ;do
@@ -140,9 +142,8 @@ main() {
 
 
 
-#########################
-# timestamp of cpt file #
-#########################
+#-----------------------
+# timestamp of cpt file
 timestamp() {
   local cptfile=$1
   local tmax_decimal=$(gmx check -f $cptfile  2>&1 | grep "Last frame" | awk '{print $NF}')
@@ -152,9 +153,8 @@ timestamp() {
 
 
 
-##########################
-# make working directory #
-##########################
+#--------------------------
+# create working directory
 mkwrkdir() {
   local wrkdir=$1
   if [[ -e $wrkdir ]]; then
@@ -164,9 +164,8 @@ mkwrkdir() {
 }
 
 
-##########################
-# block average function #
-##########################
+#------------------------
+# block average function 
 block_average() {
   local cmd="$1"
   local lastframe="$2"
@@ -209,11 +208,12 @@ block_average() {
 
 
 
+##################
+# Task functions #
+##################
 
-
-########
-# RMSD #
-########
+#------
+# rmsd
 rms() {
 
   # settings
@@ -242,11 +242,8 @@ rms() {
 
 
 
-###################
-# ORDER PARAMETER #
-###################
-
-
+#-----------------
+# Order parameter
 order() {
 
   # settings
@@ -379,9 +376,8 @@ order() {
 
 
 
-########
-# SASA #
-########
+#------------------------------
+# SASA (Solvent accessble area
 sas() {
 
   # settings
@@ -406,9 +402,8 @@ sas() {
 
 
 
-#######
-# BOX #
-#######
+#----------
+# Box size
 box() {
 
   workdir=box
@@ -426,9 +421,8 @@ box() {
 
 
 
-###########
-# DENSITY #
-###########
+#---------
+# Density
 density() {
 
   # settings
@@ -482,9 +476,8 @@ density() {
 
 
 
-#######
-# BAR #
-#######
+#--------------------------------
+# BAR (Bennett Acceptance Ratio)
 bar() {
 
   # settings
@@ -544,9 +537,8 @@ bar() {
 }
 
 
-########
-# DIST #
-########
+#------------------------------
+# Distance (normal simulation)
 dist() {
 
   # settings
@@ -570,6 +562,8 @@ dist() {
 }
 
 
+#----------------------------
+# Distance (FEP simulations)
 dist_fep() {
 
   # settings
@@ -602,9 +596,8 @@ dist_fep() {
 
 
 
-########
-# MSD #
-########
+#----------------------------------------
+# MSD (Mean square deviation, diffusion)
 msd() {
 
   # settings
@@ -634,9 +627,8 @@ msd() {
 
 
 
-###############
-# DENSITY MAP #
-###############
+#---------------------------------
+# Density map (normal simulation)
 densmap() {
 
   # settings
@@ -655,6 +647,8 @@ densmap() {
 
 
 
+#-------------------------------
+# Density map (FEP simulations)
 densmap_fep() {
 
   # settings
@@ -682,9 +676,8 @@ densmap_fep() {
 }
 
 
-############
-# CONTACTS #
-############
+#----------
+# Contacts
 contacts() {
 
   # settings
@@ -709,9 +702,8 @@ contacts() {
 }
 
 
-#######
-# RDF #
-#######
+#------------------------------------
+# RDF (Radial distribution function)
 rdf() {
 
   # settings
@@ -743,9 +735,7 @@ rdf() {
 }
 
 
-
-
 #####################
-# run main function #
+# Run main function #
 #####################
 main
