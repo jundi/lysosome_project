@@ -8,13 +8,10 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=heikki.mikkolainen@tut.fi
 
-#module load gromacs/5.0.5
-#module load gromacs/5.1.1
-#mdrun_bin=mdrun_mpi
-mdrun_bin=/homeappl/home/mikkolai/appl_sisu/gromacs-5.1.2/bin/mdrun_mpi
+module load gromacs/5.1.2
 
-export OMP_NUM_THREADS=1
+export OMP_NUM_THREADS=2
 let ncores=$SLURM_NNODES*24
 
-aprun -n $ncores $mdrun_bin -maxh 5 -dlb yes -cpi -replex 500 -multidir lambda{0-15} -npme 4
+aprun -j 2 -d 2 -n $ncores $mdrun_bin -maxh 5 -dlb yes -cpi -replex 500 -multidir lambda{0..15} -npme 4
 cp lambda0/md.log $SLURM_JOB_ID.log
