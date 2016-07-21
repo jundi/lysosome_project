@@ -483,7 +483,7 @@ bar() {
   cd $workdir
 
   # last frame
-  tmax=$(timestamp ${fepdir}/lambda0/state.cpt)
+  tmax=$(timestamp ${fepdir}/lambda0/traj_comp.xtc)
   echo "Last frame = $tmax"
 
   # create list of dhdl files
@@ -634,7 +634,7 @@ densmap() {
 
   lastframe=$(timestamp $traj)
 
-  for group in POPC CHOL CERA SM16 LBPA FepCHOL CHOL_C3 CHOL_C17 FepCHOL_C3 FepCHOL_C17; do
+  for group in POPC_P CHOL_C3 CHOL_C17 FepCHOL_C3 FepCHOL_C17; do
     if ! [[ $(grep "\[ $group \]" $index) ]]; then
       continue
     fi
@@ -647,8 +647,8 @@ densmap() {
       mkdir -p $b
       cd $b
 
-      echo $group | gmx densmap -f $traj -s $structure -n $index -b $b -bin 0.2 -unit nm-2 -o densmap.xpm  -dt $dt #-od $group.dat
-      gmx xpm2ps -f densmap.xpm -rainbow blue -o densmap.eps
+      echo $group | gmx densmap -f $traj -s $structure -n $index -b $b -bin 0.2 -unit nm-2 -o densmap.xpm -dt $dt
+      gmx xpm2ps -f densmap.xpm -rainbow blue -o densmap.eps -title none -size 250
 
       cd ..
       let b=$b+$block
@@ -673,10 +673,11 @@ densmap_fep() {
   cd $workdir
 
   # last frame
-  lastframe=$(timestamp ${fepdir}/lambda0/state.cpt)
+  lastframe=$(timestamp ${fepdir}/lambda0/traj_comp.xtc)
+  echo $lastframe
 
   b=$begin
-  for group in POPC CHOL CERA SM16 LBPA FepCHOL CHOL_C3 CHOL_C17 FepCHOL_C3 FepCHOL_C17; do
+  for group in POPC_P CHOL_C3 CHOL_C17 FepCHOL_C3 FepCHOL_C17; do
     if ! [[ $(grep "\[ $group \]" $index) ]]; then
       continue
     fi
@@ -693,8 +694,8 @@ densmap_fep() {
 	mkdir -p $b
 	cd $b
 
-	echo $group | gmx densmap -f ${fepdir}/lambda${l}/traj_comp.xtc -s ${fepdir}/lambda${l}/topol.tpr -n $index -b $b -bin 0.2 -unit nm-2 -o $group/$l/$b-$e.xpm -dt $dt #-od $group.dat
-	gmx xpm2ps -f $group/$l/$b-$e.xpm -rainbow blue -o $group/$l/$b-$e.eps
+	echo $group | gmx densmap -f ${fepdir}/lambda${l}/traj_comp.xtc -s ${fepdir}/lambda${l}/topol.tpr -n $index -b $b -bin 0.2 -unit nm-2 -o densmap.xpm -dt $dt
+	gmx xpm2ps -f densmap.xpm -rainbow blue -o densmap.eps -title none -size 250
 
 	cd .. #b
 	let b=$b+$block
