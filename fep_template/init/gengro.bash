@@ -4,7 +4,7 @@
 # FEP+REMD simulations
 traj="../../npt/traj_comp.xtc"
 tpr="../../npt/topol.tpr"
-timesteps=(100000 65000 30000)
+timesteps=(100000 70000 40000)
 fep_residue=91
 residues=(96 97 98 99 100)
 
