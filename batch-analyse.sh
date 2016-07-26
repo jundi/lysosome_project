@@ -483,7 +483,7 @@ bar() {
   cd $workdir
 
   # last frame
-  tmax=$(timestamp ${fepdir}/lambda0/traj_comp.xtc)
+  tmax=$(timestamp ${fepdir}/lambda0/state.cpt)
   echo "Last frame = $tmax"
 
   # create list of dhdl files
