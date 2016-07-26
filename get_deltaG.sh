@@ -21,6 +21,8 @@ systems=(150POPC_20CHOL_30CERA \
 90POPC_10CHOL \
 60POPC_10CHOL_30CERA/free_energy_other_leaflet/ \
 60POPC_10CHOL_30SM16/free_energy_other_leaflet/ \
+60POPC_10CHOL_30LBPA22RR/free_energy/ \
+60POPC_10CHOL_30LBPA22RR/free_energy_other_leaflet/ \
 )
 
 for s in ${systems[@]}; do
