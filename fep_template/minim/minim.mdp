@@ -1,9 +1,9 @@
-title		= Minimization 
+title			= Minimization 
 ; Run parameters
-integrator	= steep
-emtol           = 100
-emstep          = 0.01
-nsteps		= -1
+integrator		= steep
+emtol           	= 100
+emstep          	= 0.01
+nsteps			= -1
 ; Output control
 nstxout		        = 0			; don't save coordinates
 nstvout		        = 0			; don't save velocities
@@ -32,7 +32,7 @@ fourierspacing		= 0.16			; grid spacing for FFT
 rvdw			= 1.0			; short-range van der Waals cutoff (in nm)
 DispCorr		= EnerPres		; account for cut-off vdW scheme
 ; Temperature coupling is off
-tcoupl		= no
+tcoupl			= no
 ; Pressure coupling is off
 pcoupl		        = no
 ; Velocity generation
