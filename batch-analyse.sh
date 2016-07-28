@@ -41,11 +41,15 @@ $task_string
 # defaults #
 ############
 # input files
-traj=$(readlink -f ../npt/traj_comp.xtc)
-structure=$(readlink -f ../npt/topol.tpr)
-index=$(readlink -f ../index.ndx)
-edr=$(readlink -f ../npt/ener.edr)
-fepdir=$(readlink -f ../free_energy/prod)
+traj=$(readlink -m ../npt/traj_comp.xtc)
+structure=$(readlink -m ../npt/topol.tpr)
+edr=$(readlink -m ../npt/ener.edr)
+if [[ -e ../index.ndx ]]; then
+  index=$(readlink -m ../index.ndx)
+else
+  index=$(readlink -m ../../index.ndx)
+fi
+fepdir=$(readlink -m ../prod)
 # other parameters
 block=10000	# block size for block average
 dt=-1		# skip frames
