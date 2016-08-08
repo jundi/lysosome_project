@@ -482,6 +482,9 @@ bar() {
   # settings
   workdir=bar
   temp=310
+  nbmin=5
+  nbmax=5
+  prec=4
 
   mkwrkdir $workdir
   cd $workdir
@@ -500,13 +503,13 @@ bar() {
   b=1
   let e=$b+$block-1
   blocklist=""
-  while [[ $e -lt $tmax ]]; do
+  while [[ $e -le $tmax ]]; do
 
     blocklist="$b-$e/barint.xvg $blocklist"
 
     for E in $tmax $e; do 
       mkdir -p $b-$E
-      sem -j $maxjobs gmx bar -f $dhdl -o $b-$E/bar.xvg -oi $b-$E/barint.xvg -oh $b-$E/histogram.xvg -b $b -e $E 
+      sem -j $maxjobs gmx bar -f $dhdl -o $b-$E/bar.xvg -oi $b-$E/barint.xvg -oh $b-$E/histogram.xvg -b $b -e $E -nbmin $nbmin -nbmax $nbmax -prec $prec -temp $temp
     done
 
     let b=$b+$block
@@ -613,7 +616,7 @@ msd() {
 
       b=0
       while [[ $b -lt $lastframe ]]; do
-	echo "$group" | sem -j $maxjobs gmx msd -trestart 100 -lateral z -f $traj -n $index -s $structure -b $b -o $group/msd_b${b}.xvg -mol $group/diff_b${b} 
+	echo "$group" | sem -j 1 gmx msd -trestart 100 -lateral z -f $traj -n $index -s $structure -b $b -o $group/msd_b${b}.xvg -mol $group/diff_b${b} 
 	let b=$b+$block
       done
       sem --wait
@@ -721,7 +724,7 @@ contacts() {
 
   # settings
   workdir=contacts
-  distance=0.2
+  distance=0.3
   refgroup=CHOL
   groups=(POPC DPPC CERA SM16 LBPA)
 
