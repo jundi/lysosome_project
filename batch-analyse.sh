@@ -145,7 +145,10 @@ main() {
 # timestamp of cpt file
 timestamp() {
   local cptfile=$1
-  local tmax_decimal=$(gmx check -f $cptfile  2>&1 | grep "Last frame" | awk '{print $NF}')
+  local tmax_decimal=$(gmx check -f $cptfile 2>&1 | grep "Last frame" | awk '{print $NF}')
+  if [[ -z  $tmax_decimal ]]; then
+    tmax_decimal=$(gmx check -f $cptfile 2>&1 | grep "Reading frame" | tail -n1 | awk '{print $NF}')
+  fi
   local tmax=$(echo $tmax_decimal/1 | bc) # decimal to integer
   echo $tmax
 }
@@ -480,10 +483,10 @@ density() {
 bar() {
 
   # settings
-  workdir=bar
+  workdir=bar_b$block
   temp=310
-  nbmin=5
-  nbmax=5
+  nbmin=6
+  nbmax=10
   prec=4
 
   mkwrkdir $workdir
@@ -766,6 +769,7 @@ rdf() {
     cd $group
 
     lastframe=$(timestamp $traj)
+    echo "Last frame: $lastframe"
     cmd="gmx rdf -f $traj -n $index -s $structure -bin $bin -ref $refgroup -sel $group -xy -o rdf.xvg -dt $dt"
     block_average "$cmd" $lastframe
 
