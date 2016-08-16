@@ -250,7 +250,7 @@ order() {
 
   # settings
   tailnames=("POPC_SN1" "POPC_SN2" "DPPC_SN1" "DPPC_SN2" "SM16_1" "SM16_2" "CERA_1" "CERA_2" "LBPA_1" "LBPA_2")
-  workdir=order
+  workdir=order_b$block
   lastframe=$(timestamp $traj)
 
   mkwrkdir $workdir
@@ -637,7 +637,7 @@ msd() {
 densmap() {
 
   # settings
-  workdir=densmap
+  workdir=densmap_b$block
 
   mkwrkdir $workdir
   cd $workdir
@@ -752,7 +752,7 @@ contacts() {
 rdf() {
 
   # settings
-  workdir=rdf
+  workdir=rdf_b$block
   bin=0.02
   refgroup=CHOL
   groups=(POPC DPPC CERA SM16 LBPA)
