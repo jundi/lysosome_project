@@ -17,14 +17,15 @@ systems=( \
 #74POPC_10CHOL_16LBPA22RR \
 #74POPC_10CHOL_16LBPA22SS \
 #90POPC_10CHOL/free_energy/analys/bar/1-100000 \
-#90POPC_10CHOL/free_energy2/analys/bar/1-40000 \
-60POPC_10CHOL_30CERA/free_energy/analys/bar/1-100000 \
+#90POPC_10CHOL/free_energy2/analys/bar_b40000/1-40000 \
+#60POPC_10CHOL_30CERA/free_energy/analys/bar/1-100000 \
 #60POPC_10CHOL_30CERA/free_energy2/analys/bar/1-54000 \
-60POPC_10CHOL_30DPPC/free_energy/analys/bar/1-100000 \
-#60POPC_10CHOL_30DPPC/free_energy2/analys/bar/1-40000 \
-60POPC_10CHOL_30SM16/free_energy/analys/bar/1-100000 \
-#60POPC_10CHOL_30SM16/free_energy2/analys/bar/1-40000 \
-60POPC_10CHOL_30LBPA22RR/free_energy3/analys/bar/1-100000 \
+60POPC_10CHOL_30CERA/free_energy3/analys/bar_b100000/1-100000 \
+#60POPC_10CHOL_30DPPC/free_energy/analys/bar/1-100000 \
+#60POPC_10CHOL_30DPPC/free_energy2/analys/bar_b40000/1-40000 \
+#60POPC_10CHOL_30SM16/free_energy/analys/bar/1-100000 \
+#60POPC_10CHOL_30SM16/free_energy2/analys/bar_b40000/1-40000 \
+#60POPC_10CHOL_30LBPA22RR/free_energy2/analys/bar_b40000/1-40000 \
 )
 
 for s in ${systems[@]}; do
