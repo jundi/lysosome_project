@@ -34,10 +34,25 @@ ee_analyze(){
     echo $av $ee
 }
 
+ee_diffusion(){
+for f in "$@"; do
+  local data_file=$1
+  if [[ -a $data_file ]]; then
+    D=$(grep "D\[" $data_file | awk '{print $5}')
+    ee=$(grep "D\[" $data_file | awk '{print $7}' | cut -d ')' -f 1 )
+  else
+    D=0
+    ee=0
+  fi
+  echo $D $ee
+done
+}
+
 
 for s in ${systems[@]}; do
 
   lipid=$(echo $s | cut -d "0" -f 4 | head -c4)
+
   contacts_POPC=( $(ee_analyze $s/analys/contacts/numcount_POPC.xvg 0 ${begin[$s]}) )
   contacts_DPPC=( $(ee_analyze $s/analys/contacts/numcount_${lipid}.xvg 0 ${begin[$s]}) )
   box=( $(ee_analyze $s/analys/box/box.xvg 0 ${begin[$s]}) )
@@ -48,9 +63,12 @@ for s in ${systems[@]}; do
   dist_POPCP=( $(ee_analyze $s/analys/dist/POPC_P/absz_average.xvg 0 ${begin[$s]}) )
   dist_CHOLC3=( $(ee_analyze $s/analys/dist/CHOL_C3/absz_average.xvg 0 ${begin[$s]}) )
   dist_CHOLC17=( $(ee_analyze $s/analys/dist/CHOL_C17/absz_average.xvg 0 ${begin[$s]}) )
+  diff_POPC=( $(ee_diffusion $s/analys/msd/CHOL/msd_b${begin[$s]}.xvg) )
+  diff_DPPC=( $(ee_diffusion $s/analys/msd/${lipid}/msd_b${begin[$s]}.xvg) )
+  diff_CHOL=( $(ee_diffusion $s/analys/msd/POPC/msd_b${begin[$s]}.xvg) )
  
 
-  echo "${contacts_POPC[0]} ${contacts_POPC[1]} ${contacts_DPPC[0]} ${contacts_DPPC[1]} ${box[0]} ${box[1]} ${sas_Membrane[0]} ${sas_Membrane[1]} ${sas_POPC[0]} ${sas_POPC[1]} ${sas_CHOL[0]} ${sas_CHOL[1]} ${sas_DPPC[0]} ${sas_DPPC[1]} ${dist_POPCP[0]} ${dist_POPCP[1]} ${dist_CHOLC3[0]} ${dist_CHOLC3[1]} ${dist_CHOLC17[0]} ${dist_CHOLC17[1]} "
+  echo "${contacts_POPC[0]} ${contacts_POPC[1]} ${contacts_DPPC[0]} ${contacts_DPPC[1]} ${box[0]} ${box[1]} ${sas_Membrane[0]} ${sas_Membrane[1]} ${sas_POPC[0]} ${sas_POPC[1]} ${sas_CHOL[0]} ${sas_CHOL[1]} ${sas_DPPC[0]} ${sas_DPPC[1]} ${dist_POPCP[0]} ${dist_POPCP[1]} ${dist_CHOLC3[0]} ${dist_CHOLC3[1]} ${dist_CHOLC17[0]} ${dist_CHOLC17[1]} ${diff_POPC[0]} ${diff_POPC[1]} ${diff_DPPC[0]} ${diff_DPPC[1]} ${diff_CHOL[0]} ${diff_CHOL[1]} "
 done
 
 
