@@ -16,25 +16,21 @@ systems=( \
 #20CHOL_180SM16 \
 #74POPC_10CHOL_16LBPA22RR \
 #74POPC_10CHOL_16LBPA22SS \
-60POPC_10CHOL_30CERA \
-60POPC_10CHOL_30DPPC \
-60POPC_10CHOL_30SM16 \
-60POPC_10CHOL_30LBPA22RR \
-90POPC_10CHOL \
+90POPC_10CHOL/free_energy/ \
+60POPC_10CHOL_30CERA/free_energy/ \
+60POPC_10CHOL_30DPPC/free_energy/ \
+60POPC_10CHOL_30SM16/free_energy/ \
+60POPC_10CHOL_30LBPA22RR/free_energy3/ \
 )
 
+script=$(readlink -f ../scripts/batch-analyse.sh)
 for s in ${systems[@]}; do
   echo $s
 
-  cd $s
-  for f in $(find -wholename "*contacts/numcount_LBPA.xvg"); do
-    #xvg_runningmean.py -f $f -n 10
-    #xvg_runningmean.py -f $f -n 20
-    #xvg_runningmean.py -f $f -n 50
-    #xvg_runningmean.py -f $f -n 100
-    xvg_runningmean.py -f $f -n 200
-    #xvg_runningmean.py -f $f -n 500
-  done
+  cd $s/analys
+  cp -r bar bar_b10000
+  $script bar -b 100000
   cd -
 
 done
+

@@ -430,8 +430,8 @@ density() {
   # settings
   ref_group="Membrane"
   groups=("POPC" "CHOL" "CHOL_C3" "CHOL_C17" "LBPA" "CERA" "SM16" "DPPC")
-  workdir=density
-  sl=100 #slices
+  workdir=density_b$block
+  sl=250 #slices
   dens="number"
 
   mkwrkdir $workdir
@@ -607,6 +607,9 @@ msd() {
 
   # settings
   workdir=msd
+  trestart=1000
+  bf=1000
+  ef=10000
 
   mkwrkdir $workdir
   cd $workdir
@@ -619,7 +622,7 @@ msd() {
 
       b=0
       while [[ $b -lt $lastframe ]]; do
-	echo "$group" | sem -j 1 gmx msd -trestart 100 -lateral z -f $traj -n $index -s $structure -b $b -o $group/msd_b${b}.xvg -mol $group/diff_b${b} 
+	echo "$group" | sem -j 1 gmx msd -trestart $trestart -lateral z -f $traj -n $index -s $structure -b $b -o $group/msd_b${b}.xvg -mol $group/diff_b${b} -bf $bf -ef $ef
 	let b=$b+$block
       done
       sem --wait
