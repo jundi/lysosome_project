@@ -25,16 +25,29 @@ systems=( \
 
 for s in ${systems[@]}; do
   echo $s
-
   cd $s
-  for f in $(find -wholename "*contacts/numcount_LBPA.xvg"); do
-    #xvg_runningmean.py -f $f -n 10
-    #xvg_runningmean.py -f $f -n 20
-    #xvg_runningmean.py -f $f -n 50
-    #xvg_runningmean.py -f $f -n 100
-    xvg_runningmean.py -f $f -n 200
-    #xvg_runningmean.py -f $f -n 500
+  
+  # contacts
+  for f in $(find -wholename "*contacts/numcount_????.xvg"); do
+    xvg_runningmean.py -f $f -n 20
   done
-  cd -
 
+  # sasa
+  for f in $(find -wholename "*sas/*-area.xvg"); do
+    xvg_runningmean.py -f $f -n 20
+    xvg_runningmean.py -f $f -n 50
+  done
+
+  # box
+  for f in $(find -wholename "*box/box.xvg"); do
+    xvg_runningmean.py -f $f -n 500
+  done
+
+  # dist
+  for f in $(find -wholename "*dist/*/absz_average.xvg"); do
+    xvg_runningmean.py -f $f -n 20
+  done
+
+
+  cd -
 done
