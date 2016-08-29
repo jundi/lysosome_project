@@ -17,7 +17,7 @@ systems=( \
 #74POPC_10CHOL_16LBPA22RR \
 #74POPC_10CHOL_16LBPA22SS \
 90POPC_10CHOL \
-60POPC_10CHOL_30CERA \
+#60POPC_10CHOL_30CERA \
 60POPC_10CHOL_30DPPC \
 60POPC_10CHOL_30SM16 \
 60POPC_10CHOL_30LBPA22RR \
@@ -28,7 +28,7 @@ for s in ${systems[@]}; do
   echo $s
 
   cd $s/analys
-  $script -f ../traj/npt_0ns-500ns_dt1000.xtc msd -b 10000
+  $script -f ../traj/npt_0ns-500ns_dt1000.xtc -b 50000 msd
   cd -
 
 done
