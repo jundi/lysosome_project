@@ -615,6 +615,7 @@ msd() {
 
   # settings
   workdir=msd
+  refgroup=Membrane
   trestart=1000
   bf=1000
   ef=10000
@@ -630,7 +631,7 @@ msd() {
 
       b=0
       while [[ $b -lt $lastframe ]]; do
-	echo "$group" | sem -j 1 gmx msd -trestart $trestart -lateral z -f $traj -n $index -s $structure -b $b -o $group/msd_b${b}.xvg -mol $group/diff_b${b} -beginfit $bf -endfit $ef
+	echo "$group $refgroup" | sem -j 1 gmx msd -trestart $trestart -lateral z -f $traj -n $index -s $structure -b $b -o $group/msd_b${b}.xvg -beginfit $bf -endfit $ef -rmcomm 
 	let b=$b+$block
       done
       sem --wait
