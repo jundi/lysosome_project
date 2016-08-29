@@ -47,6 +47,9 @@ for s in ${systems[@]}; do
   for f in $(find -wholename "*dist/*/absz_average.xvg"); do
     xvg_runningmean.py -f $f -n 20
   done
+  for f in $(find -wholename "*dist/*/z.xvg"); do
+    xvg_runningmean.py -f $f -n 20
+  done
 
 
   cd -
