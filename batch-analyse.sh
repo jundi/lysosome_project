@@ -208,6 +208,14 @@ block_average() {
 
 }
 
+#------------------------
+# block average function 
+boxcenter() {
+  local boxfile=$1
+  local boxz=$(grep "s4 legend" $boxfile | awk '{print $5}' | cut -d \" -f 1)
+  local boxzcenter=$(echo "scale=5; $boxz / 2" | bc -l)
+  echo $boxzcenter
+}
 
 
 ##################
@@ -622,7 +630,7 @@ msd() {
 
       b=0
       while [[ $b -lt $lastframe ]]; do
-	echo "$group" | sem -j 1 gmx msd -trestart $trestart -lateral z -f $traj -n $index -s $structure -b $b -o $group/msd_b${b}.xvg -mol $group/diff_b${b} -bf $bf -ef $ef
+	echo "$group" | sem -j 1 gmx msd -trestart $trestart -lateral z -f $traj -n $index -s $structure -b $b -o $group/msd_b${b}.xvg -mol $group/diff_b${b} -beginfit $bf -endfit $ef
 	let b=$b+$block
       done
       sem --wait
@@ -757,8 +765,15 @@ rdf() {
   # settings
   workdir=rdf_b$block
   bin=0.02
-  refgroup=CHOL
+  refgroup=CHL1
   groups=(POPC DPPC CERA SM16 LBPA)
+  if [[ -e box/box_ee.xvg ]]; then
+    boxsizefile=box/box_ee.xvg
+  else
+    boxsizefile=../../analys/box/box_ee.xvg
+  fi
+  membrane_center=$(boxcenter $boxsizefile)
+
 
   mkwrkdir $workdir
   cd $workdir
@@ -773,7 +788,19 @@ rdf() {
 
     lastframe=$(timestamp $traj)
     echo "Last frame: $lastframe"
-    cmd="gmx rdf -f $traj -n $index -s $structure -bin $bin -ref $refgroup -sel $group -xy -o rdf.xvg -dt $dt"
+
+    # leaflet A
+    leaflet="A"
+    ref="resname $refgroup and z < $membrane_center"
+    sel="resname $group and z < $membrane_center"
+    cmd="gmx rdf -f $traj -n $index -s $structure -bin $bin -ref \"$ref\" -sel \"$sel\" -xy -o rdf_leaflet_${leaflet}.xvg -dt $dt -selrpos mol_com"
+    block_average "$cmd" $lastframe
+
+    # leaflet B
+    leaflet="B"
+    ref="resname $refgroup and z > $membrane_center"
+    sel="resname $group and z > $membrane_center"
+    cmd="gmx rdf -f $traj -n $index -s $structure -bin $bin -ref \"$ref\" -sel \"$sel\" -xy -o rdf_leaflet_${leaflet}.xvg -dt $dt -selrpos mol_com"
     block_average "$cmd" $lastframe
 
     cd ..
