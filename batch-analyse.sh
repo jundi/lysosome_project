@@ -208,8 +208,8 @@ block_average() {
 
 }
 
-#------------------------
-# block average function 
+#---------------------------
+# Get the center of the box 
 boxcenter() {
   local boxfile=$1
   local boxz=$(grep "s4 legend" $boxfile | awk '{print $5}' | cut -d \" -f 1)
@@ -631,7 +631,7 @@ msd() {
 
       b=0
       while [[ $b -lt $lastframe ]]; do
-	echo "$group $refgroup" | sem -j 1 gmx msd -trestart $trestart -lateral z -f $traj -n $index -s $structure -b $b -o $group/msd_b${b}.xvg -beginfit $bf -endfit $ef -rmcomm 
+	echo "$group $refgroup" | sem -j 1 gmx_msd_rmcomm_mol msd -trestart $trestart -lateral z -f $traj -n $index -s $structure -b $b -o $group/msd_b${b}.xvg -mol $group/diff_b${b}.xvg -beginfit $bf -endfit $ef -rmcomm 
 	let b=$b+$block
       done
       sem --wait
