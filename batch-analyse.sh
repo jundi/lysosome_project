@@ -617,11 +617,16 @@ msd() {
   workdir=msd
   refgroup=Membrane
   trestart=1000
-  bf=1000
-  ef=10000
+  bf=10000
+  ef=20000
+  boxsizefile=box/box_ee.xvg
+  membrane_center=$(boxcenter $boxsizefile)
 
   mkwrkdir $workdir
   cd $workdir
+
+  # index files for leaflets
+  ndx_leaflets.sh -s $structure -n $index -b $membrane_center
 
   lastframe=$(timestamp $traj)
   for group in CHOL POPC LBPA DPPC SM16 CERA; do
@@ -631,10 +636,14 @@ msd() {
 
       b=0
       while [[ $b -lt $lastframe ]]; do
-	echo "$group $refgroup" | sem -j 1 gmx_msd_rmcomm_mol msd -trestart $trestart -lateral z -f $traj -n $index -s $structure -b $b -o $group/msd_b${b}.xvg -mol $group/diff_b${b}.xvg -beginfit $bf -endfit $ef -rmcomm 
+	echo "$group $refgroup" | gmx_msd_rmcomm_mol msd -trestart $trestart -lateral z -f $traj -n ../leaflet_A.ndx -s $structure -b $b -o $group/msd_leaflet_A_b${b}.xvg -mol $group/diff_leaflet_A_b${b}.xvg -beginfit $bf -endfit $ef -rmcomm 
+	echo "$group $refgroup" | gmx_msd_rmcomm_mol msd -trestart $trestart -lateral z -f $traj -n ../leaflet_B.ndx -s $structure -b $b -o $group/msd_leaflet_B_b${b}.xvg -mol $group/diff_leaflet_B_b${b}.xvg -beginfit $bf -endfit $ef -rmcomm 
+
+	# combine diffusion coefficient files of leaflets
+	xvg_cat -f $group/diff_leaflet_A_b${b}.xvg $group/diff_leaflet_B_b${b}.xvg -o $group/diff_b${b}.xvg
+
 	let b=$b+$block
       done
-      sem --wait
     fi
 
   done
