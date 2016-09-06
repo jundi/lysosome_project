@@ -10,11 +10,11 @@ systems=(
 )
 
 declare -A begin
-begin["90POPC_10CHOL"]=30000
-begin["60POPC_10CHOL_30DPPC"]=30000
-begin["60POPC_10CHOL_30CERA"]=30000
-begin["60POPC_10CHOL_30SM16"]=30000
-begin["60POPC_10CHOL_30LBPA22RR"]=30000
+begin["90POPC_10CHOL"]=50000
+begin["60POPC_10CHOL_30DPPC"]=50000
+begin["60POPC_10CHOL_30CERA"]=50000
+begin["60POPC_10CHOL_30SM16"]=50000
+begin["60POPC_10CHOL_30LBPA22RR"]=50000
 
 ee_analyze(){
   local data_file=$1
@@ -53,16 +53,16 @@ for s in ${systems[@]}; do
 
   lipid=$(echo $s | cut -d "0" -f 4 | head -c4)
 
-  contacts_POPC=( $(ee_analyze $s/analys/contacts/numcount_POPC.xvg 0 ${begin[$s]}) )
-  contacts_DPPC=( $(ee_analyze $s/analys/contacts/numcount_${lipid}.xvg 0 ${begin[$s]}) )
-  box=( $(ee_analyze $s/analys/box/box.xvg 0 ${begin[$s]}) )
-  sas_Membrane=( $(ee_analyze $s/analys/sas/Membrane-area.xvg 2 ${begin[$s]}) )
-  sas_POPC=( $(ee_analyze $s/analys/sas/POPC-area.xvg 2 ${begin[$s]}) )
-  sas_CHOL=( $(ee_analyze $s/analys/sas/CHOL-area.xvg 2 ${begin[$s]}) )
-  sas_DPPC=( $(ee_analyze $s/analys/sas/${lipid}-area.xvg 2 ${begin[$s]}) )
-  dist_POPCP=( $(ee_analyze $s/analys/dist/POPC_P/absz_average.xvg 0 ${begin[$s]}) )
-  dist_CHOLC3=( $(ee_analyze $s/analys/dist/CHOL_C3/absz_average.xvg 0 ${begin[$s]}) )
-  dist_CHOLC17=( $(ee_analyze $s/analys/dist/CHOL_C17/absz_average.xvg 0 ${begin[$s]}) )
+  #contacts_POPC=( $(ee_analyze $s/analys/contacts/numcount_POPC.xvg 0 ${begin[$s]}) )
+  #contacts_DPPC=( $(ee_analyze $s/analys/contacts/numcount_${lipid}.xvg 0 ${begin[$s]}) )
+  #box=( $(ee_analyze $s/analys/box/box.xvg 0 ${begin[$s]}) )
+  #sas_Membrane=( $(ee_analyze $s/analys/sas/Membrane-area.xvg 2 ${begin[$s]}) )
+  #sas_POPC=( $(ee_analyze $s/analys/sas/POPC-area.xvg 2 ${begin[$s]}) )
+  #sas_CHOL=( $(ee_analyze $s/analys/sas/CHOL-area.xvg 2 ${begin[$s]}) )
+  #sas_DPPC=( $(ee_analyze $s/analys/sas/${lipid}-area.xvg 2 ${begin[$s]}) )
+  #dist_POPCP=( $(ee_analyze $s/analys/dist/POPC_P/absz_average.xvg 0 ${begin[$s]}) )
+  #dist_CHOLC3=( $(ee_analyze $s/analys/dist/CHOL_C3/absz_average.xvg 0 ${begin[$s]}) )
+  #dist_CHOLC17=( $(ee_analyze $s/analys/dist/CHOL_C17/absz_average.xvg 0 ${begin[$s]}) )
   diff_POPC=( $(ee_diffusion $s/analys/msd/CHOL/msd_b${begin[$s]}.xvg) )
   diff_DPPC=( $(ee_diffusion $s/analys/msd/${lipid}/msd_b${begin[$s]}.xvg) )
   diff_CHOL=( $(ee_diffusion $s/analys/msd/POPC/msd_b${begin[$s]}.xvg) )
