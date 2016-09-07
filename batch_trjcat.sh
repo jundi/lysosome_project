@@ -23,7 +23,6 @@ systems=( \
 60POPC_10CHOL_30LBPA22RR \
 )
 
-script=$(readlink -f ../scripts/batch-analyse.sh)
 for s in ${systems[@]}; do
   echo $s
 
