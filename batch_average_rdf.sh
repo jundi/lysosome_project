@@ -4,16 +4,14 @@ set -e
 average() {
   system=$1
   residue=$2
-  fep1=$3
-  fep2=$4
 
   filelist=(\
     ${system}/analys/rdf_b50000/${residue}/50001-500000_rdf_leaflet_A.xvg \
     ${system}/analys/rdf_b50000/${residue}/50001-500000_rdf_leaflet_B.xvg \
-    ${system}/free_energy${fep1}/analys/rdf_b10000/${residue}/1-100000_rdf_leaflet_A.xvg \
-    ${system}/free_energy${fep1}/analys/rdf_b10000/${residue}/1-100000_rdf_leaflet_B.xvg \
-    ${system}/free_energy${fep2}/analys/rdf_b10000/${residue}/1-100000_rdf_leaflet_A.xvg \
-    ${system}/free_energy${fep2}/analys/rdf_b10000/${residue}/1-100000_rdf_leaflet_B.xvg \
+    ${system}/free_energy/leaflet_A/run/analys/rdf_b10000/${residue}/1-100000_rdf_leaflet_A.xvg \
+    ${system}/free_energy/leaflet_A/run/analys/rdf_b10000/${residue}/1-100000_rdf_leaflet_B.xvg \
+    ${system}/free_energy/leaflet_B/run/analys/rdf_b10000/${residue}/1-100000_rdf_leaflet_A.xvg \
+    ${system}/free_energy/leaflet_B/run/analys/rdf_b10000/${residue}/1-100000_rdf_leaflet_B.xvg \
     )
   #echo $filelist
   #echo ""
@@ -32,13 +30,13 @@ average() {
 
 }
 
-#average "90POPC_10CHOL" "POPC" "" "2"
-#average "60POPC_10CHOL_30CERA" "POPC" "3" "2"
-#average "60POPC_10CHOL_30CERA" "CERA" "3" "2"
-#average "60POPC_10CHOL_30DPPC" "POPC" "" "2"
-#average "60POPC_10CHOL_30DPPC" "DPPC" "" "2"
-#average "60POPC_10CHOL_30SM16" "POPC" "" "2"
-#average "60POPC_10CHOL_30SM16" "SM16" "" "2"
-average "60POPC_10CHOL_30LBPA22RR" "POPC" "3" "2"
-average "60POPC_10CHOL_30LBPA22RR" "LBPA" "3" "2"
+#average "90POPC_10CHOL" "POPC"
+#average "60POPC_10CHOL_30CERA" "POPC"
+#average "60POPC_10CHOL_30CERA" "CERA"
+#average "60POPC_10CHOL_30DPPC" "POPC"
+#average "60POPC_10CHOL_30DPPC" "DPPC"
+#average "60POPC_10CHOL_30SM16" "POPC"
+#average "60POPC_10CHOL_30SM16" "SM16"
+average "60POPC_10CHOL_30LBPA22RR" "POPC"
+average "60POPC_10CHOL_30LBPA22RR" "LBPA"
 
