@@ -629,18 +629,25 @@ msd() {
   ndx_leaflets.sh -s $structure -n $index -b $membrane_center
 
   lastframe=$(timestamp $traj)
-  for group in CHOL POPC LBPA DPPC SM16 CERA; do
+  for group in CHOL POPC LBPA DPPC SM16 CERA POPC_P; do
 
     if [[ $(grep "\[ $group \]" $index) ]]; then
       mkdir -p $group
 
       b=0
       while [[ $b -lt $lastframe ]]; do
-	echo "$group $refgroup" | gmx_msd_rmcomm_mol msd -trestart $trestart -lateral z -f $traj -n ../leaflet_A.ndx -s $structure -b $b -o $group/msd_leaflet_A_b${b}.xvg -mol $group/diff_leaflet_A_b${b}.xvg -beginfit $bf -endfit $ef -rmcomm 
-	echo "$group $refgroup" | gmx_msd_rmcomm_mol msd -trestart $trestart -lateral z -f $traj -n ../leaflet_B.ndx -s $structure -b $b -o $group/msd_leaflet_B_b${b}.xvg -mol $group/diff_leaflet_B_b${b}.xvg -beginfit $bf -endfit $ef -rmcomm 
 
-	# combine diffusion coefficient files of leaflets
-	xvg_cat -f $group/diff_leaflet_A_b${b}.xvg $group/diff_leaflet_B_b${b}.xvg -o $group/diff_b${b}.xvg
+	if [[ $group != POPC_P ]]; then
+	  # MSD of molecules
+	  echo "$group $refgroup" | gmx_msd_rmcomm_mol msd -trestart $trestart -lateral z -f $traj -n leaflet_A.ndx -s $structure -b $b -o $group/msd_mol_leaflet_A_b${b}.xvg -mol $group/diff_leaflet_A_b${b}.xvg -beginfit $bf -endfit $ef -rmcomm 
+	  echo "$group $refgroup" | gmx_msd_rmcomm_mol msd -trestart $trestart -lateral z -f $traj -n leaflet_B.ndx -s $structure -b $b -o $group/msd_mol_leaflet_B_b${b}.xvg -mol $group/diff_leaflet_B_b${b}.xvg -beginfit $bf -endfit $ef -rmcomm 
+	  # combine diffusion coefficient files of leaflets
+	  xvg_cat.py -f $group/diff_leaflet_A_b${b}.xvg $group/diff_leaflet_B_b${b}.xvg -o $group/diff_b${b}.xvg
+	fi
+
+	# MSD of atoms
+	echo "$group $refgroup" | gmx msd -trestart $trestart -lateral z -f $traj -n leaflet_A.ndx -s $structure -b $b -o $group/msd_atom_leaflet_A_b${b}.xvg -beginfit $bf -endfit $ef -rmcomm 
+	echo "$group $refgroup" | gmx msd -trestart $trestart -lateral z -f $traj -n leaflet_B.ndx -s $structure -b $b -o $group/msd_atom_leaflet_B_b${b}.xvg -beginfit $bf -endfit $ef -rmcomm 
 
 	let b=$b+$block
       done
