@@ -2,87 +2,74 @@
 set -e
 
 systems=(
-#180POPC_20CHOL \
-#150POPC_20CHOL_30CERA \
-#150POPC_20CHOL_30SM16 \
-#150POPC_20CHOL_30LBPA22RR \
-#150POPC_20CHOL_30LBPA22SS \
-#20CHOL_180CERA \
-#20CHOL_180SM16 \
-#199POPC_1CHOL \
-#169POPC_1CHOL_30CERA \
-#169POPC_1CHOL_30SM16 \
-#169POPC_1CHOL_30LBPA22RR \
-#169POPC_1CHOL_30LBPA22SS \
-#74POPC_10CHOL_16LBPA22RR \
-#74POPC_10CHOL_16LBPA22SS \
-90POPC_10CHOL/free_energy \
-90POPC_10CHOL/free_energy2 \
-60POPC_10CHOL_30DPPC/free_energy \
-60POPC_10CHOL_30DPPC/free_energy2 \
-60POPC_10CHOL_30CERA/free_energy \
-60POPC_10CHOL_30CERA/free_energy2 \
-60POPC_10CHOL_30CERA/free_energy3 \
-60POPC_10CHOL_30SM16/free_energy \
-60POPC_10CHOL_30SM16/free_energy2 \
-60POPC_10CHOL_30LBPA22RR/free_energy \
-60POPC_10CHOL_30LBPA22RR/free_energy2 \
-60POPC_10CHOL_30LBPA22RR/free_energy3 \
+90POPC_10CHOL \
+60POPC_10CHOL_30DPPC \
+60POPC_10CHOL_30CERA \
+60POPC_10CHOL_30SM16 \
+60POPC_10CHOL_30LBPA22RR \
 )
-
-declare -A sim_length
-sim_length["90POPC_10CHOL/free_energy"]=100000
-sim_length["90POPC_10CHOL/free_energy2"]=100000
-sim_length["60POPC_10CHOL_30DPPC/free_energy"]=100000
-sim_length["60POPC_10CHOL_30DPPC/free_energy2"]=100000
-sim_length["60POPC_10CHOL_30CERA/free_energy"]=100000
-sim_length["60POPC_10CHOL_30CERA/free_energy2"]=100000
-sim_length["60POPC_10CHOL_30CERA/free_energy3"]=100000
-sim_length["60POPC_10CHOL_30SM16/free_energy"]=100000
-sim_length["60POPC_10CHOL_30SM16/free_energy2"]=100000
-sim_length["60POPC_10CHOL_30LBPA22RR/free_energy"]=40000
-sim_length["60POPC_10CHOL_30LBPA22RR/free_energy2"]=100000
-sim_length["60POPC_10CHOL_30LBPA22RR/free_energy3"]=100000
-
 
 for s in ${systems[@]}; do
 
-  # Block average
-  #echo "*$s/analys/bar_b10000/barint_1-${sim_length[$s]}.xvg"
-  blockavg=$(find -wholename "*$s/analys/bar_b10000/barint_1-${sim_length[$s]}.xvg")
-  #echo $blockavg
-  if [[ -z $blockavg ]]; then
-    blockavg_val=0
-    blockavg_err=0
-  else
-    blockavg_val=$(tail -n 1 $blockavg | awk '{print $2}')
-    blockavg_err=$(tail -n 1 $blockavg | awk '{print $3}')
-  fi
+  for l in leaflet_A leaflet_B average; do
 
-  # Cumulative sum
-  #echo "*$s/analys/bar_b${sim_length[$s]}/1-${sim_length[$s]}/bar_cumsum.xvg"
-  cumsum=$(find -wholename "*$s/analys/bar_b${sim_length[$s]}/1-${sim_length[$s]}/bar_cumsum.xvg")
-  #echo $cumsum
-  if [[ -z $cumsum ]]; then
-    cumsum_val=0
-    cumsum_err=0
-  else
-    cumsum_val=$(tail -n 1 $cumsum | awk '{print $2}')
-    cumsum_err=$(tail -n 1 $cumsum | awk '{print $3}')
-  fi
+    # init arrays for next row
+    unset dG
+    declare -A dG
+    unset err
+    declare -A err
 
-  # Cumulative sum (SSE)
-  #echo "*$s/analys/bar_b${sim_length[$s]}/1-${sim_length[$s]}/bar_cumsum.xvg"
-  cumsum=$(find -wholename "*$s/analys/bar_b${sim_length[$s]}/1-${sim_length[$s]}/bar_cumsum_SSE.xvg")
-  #echo $cumsum
-  if [[ -z $cumsum ]]; then
-    cumsumSSE_val=0
-    cumsumSSE_err=0
-  else
-    cumsumSSE_val=$(tail -n 1 $cumsum | awk '{print $2}')
-    cumsumSSE_err=$(tail -n 1 $cumsum | awk '{print $3}')
-  fi
+    for error_method in blockavg cumsum cumsumSSE; do
 
-  echo "$s $blockavg_val $blockavg_err $cumsum_val $cumsum_err $cumsumSSE_val $cumsumSSE_err"
+      # choose file
+      if [[ "$l" == "average" ]]; then
+	case $error_method in
+	  blockavg)
+	    barint=""
+	    ;;
+	  cumsum)
+	    barint="$s/free_energy/${l}/bar_cumsum.xvg"
+	    ;;
+	  cumsumSSE)
+	    barint="$s/free_energy/${l}/bar_cumsum_SSE.xvg"
+	    ;;
+	  *)
+	    echo "wtf?"
+	    ;;
+	esac
+      else
+	case $error_method in
+	  blockavg)
+	    barint="$s/free_energy/${l}/run/analys/bar_b10000/barint_1-100000.xvg"
+	    ;;
+	  cumsum)
+	    barint="$s/free_energy/${l}/run/analys/bar_b100000/1-100000/bar_cumsum.xvg"
+	    ;;
+	  cumsumSSE)
+	    barint="$s/free_energy/${l}/run/analys/bar_b100000/1-100000/bar_cumsum_SSE.xvg"
+	    ;;
+	  *)
+	    echo "wtf again?"
+	    ;;
+	esac
+      fi
+
+      # get delta G and error estimate
+      if [[ -a $barint ]]; then
+	dG[$error_method]=$(tail -n 1 $barint | awk '{print $2}')
+	err[$error_method]=$(tail -n 1 $barint | awk '{print $3}')
+      else
+	dG[$error_method]=0
+	err[$error_method]=0
+      fi
+
+
+    done
+  
+    # print row
+    printf "%25s%10s%14s%14s%14s%14s%14s%14s\n" "$s" "$l" "${dG[blockavg]}" "${err[blockavg]}" "${dG[cumsum]}" "${err[cumsum]}" "${dG[cumsumSSE]}" "${err[cumsumSSE]}" 
+
+  done
+
 done
 
