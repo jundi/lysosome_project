@@ -4,7 +4,7 @@ set -e
 ##########################
 # list of possible tasks #
 ##########################
-task_options=(order rms sas box density bar dist dist_fep msd densmap densmap_fep rdf contacts)
+task_options=(order rms sas box density bar dist dist_fep msd densmap densmap_fep rdf contacts hbond)
 
 
 ##########
@@ -827,6 +827,30 @@ rdf() {
   cd ..
 }
 
+
+#--------
+# H-bonds
+hbond() {
+
+  # settings
+  workdir=hbond
+  refgroup=CHOL
+  groups=(POPC DPPC CERA SM16 LBPA)
+
+  mkwrkdir $workdir
+  cd $workdir
+
+  for group in ${groups[@]}; do
+    if ! [[ $(grep "\[ $group \]" $index) ]]; then
+      continue
+    fi
+
+    echo "$refgroup $group" | gmx hbond -f $traj -n $index -s $structure -dt $dt -num $refgroup-$group.xvg
+
+  done
+
+  cd ..
+}
 
 #####################
 # Run main function #

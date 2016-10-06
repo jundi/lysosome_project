@@ -51,6 +51,11 @@ for s in ${systems[@]}; do
     xvg_runningmean.py -f $f -n 20
   done
 
+  # hbonds
+  for f in $(find -wholename "*hbond/CHOL-????.xvg"); do
+    xvg_runningmean.py -f $f -n 100
+  done
+
 
   cd -
 done
