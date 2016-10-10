@@ -757,7 +757,7 @@ contacts() {
   workdir=contacts
   distance=0.3
   refgroup=CHOL
-  groups=(POPC DPPC CERA SM16 LBPA)
+  groups=(POPC DPPC CERA SM16 LBPA Water)
 
   mkwrkdir $workdir
   cd $workdir
