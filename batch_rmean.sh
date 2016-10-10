@@ -26,10 +26,13 @@ systems=( \
 for s in ${systems[@]}; do
   echo $s
   cd $s
-  
+
   # contacts
   for f in $(find -wholename "*contacts/numcount_????.xvg"); do
     xvg_runningmean.py -f $f -n 20
+  done
+  for f in $(find -wholename "*contacts/numcount_Water.xvg"); do
+    xvg_runningmean.py -f $f -n 100
   done
 
   # sasa
