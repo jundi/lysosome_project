@@ -755,7 +755,7 @@ contacts() {
 
   # settings
   workdir=contacts
-  distance=0.3
+  distance=0.6
   refgroup=CHOL
   groups=(POPC DPPC CERA SM16 LBPA Water)
 
@@ -767,7 +767,7 @@ contacts() {
       continue
     fi
 
-    echo "$refgroup $group" | sem -j 6 gmx mindist -f $traj -n $index -s $structure -on numcount_r0.6_$group -od mindist_r0.6_$group -d $distance -dt $dt
+    echo "$refgroup $group" | sem -j 6 gmx mindist -f $traj -n $index -s $structure -on numcount_r${distance}_$group -od mindist_r{$distance}_$group -d $distance -dt $dt
 
   done
 
