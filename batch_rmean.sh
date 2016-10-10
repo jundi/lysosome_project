@@ -28,35 +28,35 @@ for s in ${systems[@]}; do
   cd $s
 
   # contacts
-  for f in $(find -wholename "*contacts/numcount_????.xvg"); do
-    xvg_runningmean.py -f $f -n 20
+  for f in $(find -wholename "*contacts/numcount_r???_????.xvg"); do
+    xvg_blockmean.py -f $f -n 100
   done
-  for f in $(find -wholename "*contacts/numcount_Water.xvg"); do
-    xvg_runningmean.py -f $f -n 100
+  for f in $(find -wholename "*contacts/numcount_r???_Water.xvg"); do
+    xvg_blockmean.py -f $f -n 100
   done
 
   # sasa
   for f in $(find -wholename "*sas/*-area.xvg"); do
-    xvg_runningmean.py -f $f -n 20
-    xvg_runningmean.py -f $f -n 50
+    xvg_blockmean.py -f $f -n 20
+    xvg_blockmean.py -f $f -n 50
   done
 
   # box
   for f in $(find -wholename "*box/box.xvg"); do
-    xvg_runningmean.py -f $f -n 500
+    xvg_blockmean.py -f $f -n 500
   done
 
   # dist
   for f in $(find -wholename "*dist/*/absz_average.xvg"); do
-    xvg_runningmean.py -f $f -n 20
+    xvg_blockmean.py -f $f -n 20
   done
   for f in $(find -wholename "*dist/*/z.xvg"); do
-    xvg_runningmean.py -f $f -n 20
+    xvg_blockmean.py -f $f -n 20
   done
 
   # hbonds
   for f in $(find -wholename "*hbond/CHOL-????.xvg"); do
-    xvg_runningmean.py -f $f -n 100
+    xvg_blockmean.py -f $f -n 100
   done
 
 
