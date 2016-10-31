@@ -1,10 +1,11 @@
 #!/bin/bash
+set -e
 
 # use different timesteps and residues to produce different inital states for
 # FEP+REMD simulations
-traj="../../npt/traj_comp.xtc"
-tpr="../../npt/topol.tpr"
-timesteps=(100000 70000 40000)
+traj="../../../../npt/traj_comp.xtc"
+tpr="..././../../npt/topol.tpr"
+timesteps=(500000 400000 300000 200000)
 fep_residue=91
 residues=(96 97 98 99 100)
 
