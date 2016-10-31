@@ -1,9 +1,10 @@
 #!/bin/bash
+set -e 
 
 # input files
 mdp="prod.mdp"
-top="../../topology/topol_FEP.top"
-ndx="../../index.ndx"
+top="../../../../topology/topol_FEP.top"
+ndx="../../../../index.ndx"
 confdir="../minim/"
 
 for l in {0..15}; do
