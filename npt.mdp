@@ -1,14 +1,14 @@
 title			= MD
 ; Run parameters
 integrator		= md			; leap-frog integrator
-nsteps			= 50000000		; 100 ns
+nsteps			= 250000000		; 500 ns
 dt	        	= 0.002			; 2 fs
 ; Output control
 nstxout		        = 500000		; save coordinates every 1 ns
 nstvout		        = 500000		; save velocities every 1 ns
 nstfout                 = 0
-nstenergy	        = 5000			; save energies every 10.0 ps
-nstlog		        = 5000			; update log file every 10.0 ps
+nstenergy	        = 50000			; save energies every 100 ps
+nstlog		        = 50000			; update log file every 100 ps
 nstxout-compressed      = 50000			; save coordinates every 100 ps
 compressed-x-precision  = 1000
 ; Bond parameters
