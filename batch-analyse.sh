@@ -47,7 +47,7 @@ edr=$(readlink -m ../npt/ener.edr)
 if [[ -e ../index.ndx ]]; then
   index=$(readlink -m ../index.ndx)
 else
-  index=$(readlink -m ../../index.ndx)
+  index=$(readlink -m ../../../../index.ndx)
 fi
 fepdir=$(readlink -m ../prod)
 # other parameters
