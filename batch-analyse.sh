@@ -334,6 +334,7 @@ order() {
     # Does residue exist?
     resname=$(echo $tn | cut -d "_" -f 1)
     if [[ ! $(grep " $resname " $index) ]]; then
+      echo "$tn not found"
       continue
     fi
 
@@ -344,9 +345,9 @@ order() {
     # Create index file for tail
     select=""
     for atom in ${atoms[@]}; do
-      select="$select name \"$atom\" and resname $resname;"
+      select="$select name \"$atom\" and group $resname;"
     done
-    gmx select -s $structure -select "$select" -on tailatoms.ndx
+    gmx select -s $structure -n $index -select "$select" -on tailatoms.ndx
 
 
     # loop blocks

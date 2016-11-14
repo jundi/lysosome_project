@@ -40,13 +40,13 @@ for s in ${systems[@]}; do
       else
 	case $error_method in
 	  blockavg)
-	    barint="$s/free_energy/${l}/run/analys/bar_b10000/barint_1-100000.xvg"
+	    barint="$s/free_energy/${l}/analys/bar_b10000/barint_1-100000.xvg"
 	    ;;
 	  cumsum)
-	    barint="$s/free_energy/${l}/run/analys/bar_b100000/1-100000/bar_cumsum.xvg"
+	    barint="$s/free_energy/${l}/analys/bar_b100000/1-100000/bar_cumsum.xvg"
 	    ;;
 	  cumsumSSE)
-	    barint="$s/free_energy/${l}/run/analys/bar_b100000/1-100000/bar_cumsum_SSE.xvg"
+	    barint="$s/free_energy/${l}/analys/bar_b100000/1-100000/bar_cumsum_SSE.xvg"
 	    ;;
 	  *)
 	    echo "wtf again?"

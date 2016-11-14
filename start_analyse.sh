@@ -2,25 +2,13 @@
 set -e 
 
 systems=( \
-#150POPC_20CHOL_30CERA \
-#150POPC_20CHOL_30LBPA22RR \
-#150POPC_20CHOL_30LBPA22SS \
-#150POPC_20CHOL_30SM16 \
-#169POPC_1CHOL_30CERA \
-#169POPC_1CHOL_30LBPA22RR \
-#169POPC_1CHOL_30LBPA22SS \
-#169POPC_1CHOL_30SM16 \
-#180POPC_20CHOL \
-#199POPC_1CHOL \
-#20CHOL_180CERA \
-#20CHOL_180SM16 \
-#74POPC_10CHOL_16LBPA22RR \
-#74POPC_10CHOL_16LBPA22SS \
-90POPC_10CHOL \
+#90POPC_10CHOL \
 #60POPC_10CHOL_30CERA \
-60POPC_10CHOL_30DPPC \
-60POPC_10CHOL_30SM16 \
-60POPC_10CHOL_30LBPA22RR \
+#60POPC_10CHOL_30DPPC \
+#60POPC_10CHOL_30SM16 \
+#60POPC_10CHOL_30LBPA22RR \
+60POPC_10CHOL_30LBPA16 \
+#60POPC_10CHOL_30LBPA14 \
 )
 
 script=$(readlink -f ../scripts/batch-analyse.sh)
@@ -28,7 +16,27 @@ for s in ${systems[@]}; do
   echo $s
 
   cd $s/analys
-  $script -f ../traj/npt_0ns-500ns_dt1000.xtc -b 50000 msd
+  $script -f ../npt/traj_comp.xtc rdf contacts hbond
+  cd -
+
+done
+
+systems=( \
+#90POPC_10CHOL \
+#60POPC_10CHOL_30CERA \
+#60POPC_10CHOL_30DPPC \
+#60POPC_10CHOL_30SM16 \
+#60POPC_10CHOL_30LBPA22RR \
+#60POPC_10CHOL_30LBPA16 \
+60POPC_10CHOL_30LBPA14 \
+)
+
+script=$(readlink -f ../scripts/batch-analyse.sh)
+for s in ${systems[@]}; do
+  echo $s
+
+  cd $s/analys
+  $script -f ../npt/traj_comp.xtc rms sas density dist msd rdf contacts hbond
   cd -
 
 done

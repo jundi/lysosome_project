@@ -25,16 +25,21 @@ systems=( \
 #60POPC_10CHOL_30DPPC/free_energy2/analys/bar_b100000/1-100000 \
 #60POPC_10CHOL_30SM16/free_energy/analys/bar_b100000/1-100000 \
 #60POPC_10CHOL_30SM16/free_energy2/analys/bar_b100000/1-100000 \
-60POPC_10CHOL_30LBPA22RR/free_energy/analys/bar_b100000/1-100000 \
+#60POPC_10CHOL_30LBPA22RR/free_energy/analys/bar_b100000/1-100000 \
 #60POPC_10CHOL_30LBPA22RR/free_energy2/analys/bar_b100000/1-100000 \
 #60POPC_10CHOL_30LBPA22RR/free_energy3/analys/bar_b100000/1-100000 \
+90POPC_10CHOL/free_energy/average \
+60POPC_10CHOL_30CERA/free_energy/average \
+60POPC_10CHOL_30DPPC/free_energy/average \
+60POPC_10CHOL_30SM16/free_energy/average \
+60POPC_10CHOL_30LBPA22RR/free_energy/average \
 )
 
 for s in ${systems[@]}; do
   echo $s
 
   cd $s
-  #xvg_cumsum.py -f bar.xvg -o bar_cumsum.xvg 
+  xvg_cumsum.py -f bar.xvg -o bar_cumsum.xvg 
   xvg_cumsum.py -f bar.xvg -o bar_cumsum_SSE.xvg -c 1 -e 2
   cd -
 
