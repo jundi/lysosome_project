@@ -96,6 +96,8 @@ for s in ${systems[@]}; do
   #dist_POPCP=( $(ee_analyze $s/analys/dist/POPC_P/absz_average.xvg 0 ${begin[$s]}) )
   #dist_CHOLC3=( $(ee_analyze $s/analys/dist/CHOL_C3/absz_average.xvg 0 ${begin[$s]}) )
   #dist_CHOLC17=( $(ee_analyze $s/analys/dist/CHOL_C17/absz_average.xvg 0 ${begin[$s]}) )
+  hbonds_POPC=( $(ee_analyze $s/analys/hbond/CHOL-POPC.xvg 0 ${begin[$s]}) )
+  hbonds_DPPC=( $(ee_analyze $s/analys/hbond/CHOL-${lipid}.xvg 0 ${begin[$s]}) )
 
   #----------------------------------------------------
   # Uncomment leaflet to be used for diffusion analysis
@@ -114,13 +116,13 @@ for s in ${systems[@]}; do
   #diff_POPC_P=( $(ee_msd $s/analys/msd/POPC_P/msd_atom${leaflet}_b${begin[$s]}.xvg) )
   #diff_DPPC=( $(ee_msd $s/analys/msd/${lipid}/msd_atom${leaflet}_b${begin[$s]}.xvg) )
   #diff_CHOL=( $(ee_msd $s/analys/msd/CHOL/msd_atom${leaflet}_b${begin[$s]}.xvg) )
-  diff_POPC=( $(ee_msd $s/analys/msd/POPC/msd_mol${leaflet}_b${begin[$s]}.xvg) )
-  diff_POPC_P=( $(ee_msd $s/analys/msd/POPC_P/msd_mol${leaflet}_b${begin[$s]}.xvg) )
-  diff_DPPC=( $(ee_msd $s/analys/msd/${lipid}/msd_mol${leaflet}_b${begin[$s]}.xvg) )
-  diff_CHOL=( $(ee_msd $s/analys/msd/CHOL/msd_mol${leaflet}_b${begin[$s]}.xvg) )
+  #diff_POPC=( $(ee_msd $s/analys/msd/POPC/msd_mol${leaflet}_b${begin[$s]}.xvg) )
+  #diff_POPC_P=( $(ee_msd $s/analys/msd/POPC_P/msd_mol${leaflet}_b${begin[$s]}.xvg) )
+  #diff_DPPC=( $(ee_msd $s/analys/msd/${lipid}/msd_mol${leaflet}_b${begin[$s]}.xvg) )
+  #diff_CHOL=( $(ee_msd $s/analys/msd/CHOL/msd_mol${leaflet}_b${begin[$s]}.xvg) )
  
 
   # Print everything...
-  echo "${contacts_POPC[0]} ${contacts_POPC[1]} ${contacts_DPPC[0]} ${contacts_DPPC[1]} ${box[0]} ${box[1]} ${sas_Membrane[0]} ${sas_Membrane[1]} ${sas_POPC[0]} ${sas_POPC[1]} ${sas_CHOL[0]} ${sas_CHOL[1]} ${sas_DPPC[0]} ${sas_DPPC[1]} ${dist_POPCP[0]} ${dist_POPCP[1]} ${dist_CHOLC3[0]} ${dist_CHOLC3[1]} ${dist_CHOLC17[0]} ${dist_CHOLC17[1]} ${diff_POPC[0]} ${diff_POPC[1]} ${diff_DPPC[0]} ${diff_DPPC[1]} ${diff_CHOL[0]} ${diff_CHOL[1]} ${diff_POPC_P[0]} ${diff_POPC_P[1]}"
+  echo "${contacts_POPC[0]} ${contacts_POPC[1]} ${contacts_DPPC[0]} ${contacts_DPPC[1]} ${box[0]} ${box[1]} ${sas_Membrane[0]} ${sas_Membrane[1]} ${sas_POPC[0]} ${sas_POPC[1]} ${sas_CHOL[0]} ${sas_CHOL[1]} ${sas_DPPC[0]} ${sas_DPPC[1]} ${dist_POPCP[0]} ${dist_POPCP[1]} ${dist_CHOLC3[0]} ${dist_CHOLC3[1]} ${dist_CHOLC17[0]} ${dist_CHOLC17[1]} ${diff_POPC[0]} ${diff_POPC[1]} ${diff_DPPC[0]} ${diff_DPPC[1]} ${diff_CHOL[0]} ${diff_CHOL[1]} ${diff_POPC_P[0]} ${diff_POPC_P[1]}${hbonds_POPC[0]} ${hbonds_POPC[1]} ${hbonds_DPPC[0]} ${hbonds_DPPC[1]}"
 
 done
