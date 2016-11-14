@@ -492,38 +492,8 @@ bar() {
     dhdl="${dhdl} ${fepdir}/lambda${i}/dhdl.xvg"
   done
 
-  # BAR
-  b=1
-  let e=$b+$block-1
-  blocklist=""
-  while [[ $e -le $tmax ]]; do
-
-    blocklist="$b-$e/barint.xvg $blocklist"
-
-    for E in $tmax $e; do 
-      mkdir -p $b-$E
-      sem -j $maxjobs gmx bar -f $dhdl -o $b-$E/bar.xvg -oi $b-$E/barint.xvg -oh $b-$E/histogram.xvg -b $b -e $E -nbmin $nbmin -nbmax $nbmax -prec $prec -temp $temp
-    done
-
-    let b=$b+$block
-    let e=$b+$block-1
-
-  done
-
-  # wait until other jobs finish
-  sem --wait
-
-  # join blocks to one file
-  join-xvg.py -l -o barint_blocks.xvg $blocklist
-
-  # block average
-  filelist=""
-  for f in $blocklist; do
-    filelist="$filelist $f"
-    time1=$(echo $f | cut -f 1 -d '-')
-    time2=$(echo $filelist | cut -f 2 -d '-' | cut -d / -f 1)
-    average-xvg.py -o barint_${time1}-${time2}.xvg $filelist
-  done
+  cmd="gmx bar -f $dhdl -o bar.xvg -oi barint.xvg -oh histogram.xvg -nbmin $nbmin -nbmax $nbmax -prec $prec -temp $temp"
+  block_average "$cmd" $tmax
 
   cd ..
 }
@@ -693,7 +663,6 @@ densmap_fep() {
   lastframe=$(timestamp ${fepdir}/lambda0/traj_comp.xtc)
   echo $lastframe
 
-  b=$begin
   for group in POPC_P CHOL_C3 CHOL_C17 FepCHOL_C3 FepCHOL_C17; do
     if ! [[ $(grep "\[ $group \]" $index) ]]; then
       continue
