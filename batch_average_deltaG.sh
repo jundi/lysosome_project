@@ -25,8 +25,8 @@ for s in ${systems[@]}; do
   for lambda in {0..15}; do
 
     for leaflet in A B; do
-      echo "$s/free_energy/leaflet_${leaflet}/run/prod/lambda${lambda}/dhdl.xvg"
-      xvg_cut.py -f $s/free_energy/leaflet_${leaflet}/run/prod/lambda${lambda}/dhdl.xvg -o $avgdir/leaflet_${leaflet}/dhdl_$lambda.xvg -b 0 -e 100000
+      echo "$s/free_energy/leaflet_${leaflet}/prod/lambda${lambda}/dhdl.xvg"
+      xvg_cut.py -f $s/free_energy/leaflet_${leaflet}/prod/lambda${lambda}/dhdl.xvg -o $avgdir/leaflet_${leaflet}/dhdl_$lambda.xvg -b 0 -e 100000
     done
 
     xvg_cat.py -f $avgdir/leaflet_A/dhdl_$lambda.xvg $avgdir/leaflet_B/dhdl_$lambda.xvg -o $avgdir/both_leaflets/dhdl_$lambda.xvg

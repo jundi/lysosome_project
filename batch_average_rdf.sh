@@ -8,10 +8,10 @@ average() {
   filelist=(\
     ${system}/analys/rdf_b50000/${residue}/50001-500000_rdf_leaflet_A.xvg \
     ${system}/analys/rdf_b50000/${residue}/50001-500000_rdf_leaflet_B.xvg \
-    ${system}/free_energy/leaflet_A/run/analys/rdf_b10000/${residue}/1-100000_rdf_leaflet_A.xvg \
-    ${system}/free_energy/leaflet_A/run/analys/rdf_b10000/${residue}/1-100000_rdf_leaflet_B.xvg \
-    ${system}/free_energy/leaflet_B/run/analys/rdf_b10000/${residue}/1-100000_rdf_leaflet_A.xvg \
-    ${system}/free_energy/leaflet_B/run/analys/rdf_b10000/${residue}/1-100000_rdf_leaflet_B.xvg \
+    ${system}/free_energy/leaflet_A/analys/rdf_b10000/${residue}/1-100000_rdf_leaflet_A.xvg \
+    ${system}/free_energy/leaflet_A/analys/rdf_b10000/${residue}/1-100000_rdf_leaflet_B.xvg \
+    ${system}/free_energy/leaflet_B/analys/rdf_b10000/${residue}/1-100000_rdf_leaflet_A.xvg \
+    ${system}/free_energy/leaflet_B/analys/rdf_b10000/${residue}/1-100000_rdf_leaflet_B.xvg \
     )
   #echo $filelist
   #echo ""
