@@ -4,7 +4,7 @@ set -e
 ##########################
 # list of possible tasks #
 ##########################
-task_options=(order rms sas box density bar dist dist_fep msd densmap densmap_fep rdf contacts hbond)
+task_options=(order rms sas box density bar dist dist_fep msd densmap densmap_fep rdf contacts hbond hbond_group)
 
 
 ##########
@@ -47,7 +47,7 @@ edr=$(readlink -m ../npt/ener.edr)
 if [[ -e ../index.ndx ]]; then
   index=$(readlink -m ../index.ndx)
 else
-  index=$(readlink -m ../../../../index.ndx)
+  index=$(readlink -m ../../../index.ndx)
 fi
 fepdir=$(readlink -m ../prod)
 # other parameters
@@ -422,7 +422,6 @@ box() {
   cd $workdir
 
   echo -e "Box-X\n Box-Y\n Box-Z" | gmx energy -f $edr -o box.xvg 
-  xvg_runningmean.py -f box.xvg -n 100
 
   cd ..
 }
@@ -787,7 +786,7 @@ rdf() {
   if [[ -e box/box_ee.xvg ]]; then
     boxsizefile=box/box_ee.xvg
   else
-    boxsizefile=../../analys/box/box_ee.xvg
+    boxsizefile=../../../analys/box/box_ee.xvg
   fi
   membrane_center=$(boxcenter $boxsizefile)
 
@@ -847,6 +846,36 @@ hbond() {
 
     echo "$refgroup $group" | gmx hbond -f $traj -n $index -s $structure -dt $dt -num $refgroup-$group.xvg
 
+  done
+
+  cd ..
+}
+
+#-----------------------------
+# H-bonds per functional group
+hbond_group() {
+
+  # settings
+  workdir=hbond_group
+  refgroup=CHOL
+  groups=(POPC DPPC CERA SM16 LBPA)
+
+  mkwrkdir $workdir
+  cd $workdir
+
+  # create hbond.ndx
+  system_groups=""
+  for group in ${groups[@]}; do
+    if [[ $(grep "\[ $group \]" $index) ]]; then
+      system_groups="$system_groups $group"
+    fi
+  done
+  /mount/wrk/mikkolah/lysosome/scripts/select_hbond.py -s $structure -n hbond.ndx -r $system_groups
+
+  # gmx-hbond
+  for group in $(grep "\[" hbond.ndx | awk '{print $2}') ; do
+    echo $refgroup $group
+    echo "$refgroup $group" | gmx hbond -f $traj -n hbond.ndx -s $structure -dt $dt -num $refgroup-$group.xvg
   done
 
   cd ..
