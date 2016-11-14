@@ -13,8 +13,6 @@ average() {
     ${system}/free_energy/leaflet_B/analys/rdf_b10000/${residue}/1-100000_rdf_leaflet_A.xvg \
     ${system}/free_energy/leaflet_B/analys/rdf_b10000/${residue}/1-100000_rdf_leaflet_B.xvg \
     )
-  #echo $filelist
-  #echo ""
   filelist2=""
   for f in ${filelist[@]}; do
     echo "f = $f"
@@ -30,13 +28,16 @@ average() {
 
 }
 
-#average "90POPC_10CHOL" "POPC"
-#average "60POPC_10CHOL_30CERA" "POPC"
-#average "60POPC_10CHOL_30CERA" "CERA"
-#average "60POPC_10CHOL_30DPPC" "POPC"
-#average "60POPC_10CHOL_30DPPC" "DPPC"
-#average "60POPC_10CHOL_30SM16" "POPC"
-#average "60POPC_10CHOL_30SM16" "SM16"
+average "90POPC_10CHOL" "POPC"
+average "60POPC_10CHOL_30CERA" "POPC"
+average "60POPC_10CHOL_30CERA" "CERA"
+average "60POPC_10CHOL_30DPPC" "POPC"
+average "60POPC_10CHOL_30DPPC" "DPPC"
+average "60POPC_10CHOL_30SM16" "POPC"
+average "60POPC_10CHOL_30SM16" "SM16"
 average "60POPC_10CHOL_30LBPA22RR" "POPC"
 average "60POPC_10CHOL_30LBPA22RR" "LBPA"
-
+average "60POPC_10CHOL_30LBPA14" "POPC"
+average "60POPC_10CHOL_30LBPA14" "LBPA"
+average "60POPC_10CHOL_30LBPA16" "POPC"
+average "60POPC_10CHOL_30LBPA16" "LBPA"
