@@ -257,7 +257,7 @@ rms() {
 order() {
 
   # settings
-  tailnames=("POPC_SN1" "POPC_SN2" "DPPC_SN1" "DPPC_SN2" "SM16_1" "SM16_2" "CERA_1" "CERA_2" "LBPA_1" "LBPA_2")
+  tailnames=("POPC_SN1" "POPC_SN2" "DPPC_SN1" "DPPC_SN2" "SM16_1" "SM16_2" "CERA_1" "CERA_2" "LBPA_1" "LBPA_2" "LBPA14_1" "LBPA14_2" "LBPA16_1" "LBPA16_2")
   workdir=order_b$block
   lastframe=$(timestamp $traj)
 
@@ -307,6 +307,22 @@ order() {
       "LBPA_2")
 	atoms=(C21\' C22\' C33 C34 C35 C36 C37 C38 C39 C310 C311 C312 C313 C314 C315 C316 C317 C318)
 	unsat="9 10"
+	;;
+      "LBPA14_1")
+	atoms=(C21 C22 C23 C24 C25 C26 C27 C28 C29 C210 C211 C212 C213 C214)
+	unsat=""
+	;;
+      "LBPA14_2")
+	atoms=(C21\' C22\' C33 C34 C35 C36 C37 C38 C39 C310 C311 C312 C313 C314)
+	unsat=""
+	;;
+      "LBPA16_1")
+	atoms=(C21 C22 C23 C24 C25 C26 C27 C28 C29 C210 C211 C212 C213 C214 C215 C216)
+	unsat=""
+	;;
+      "LBPA16_2")
+	atoms=(C21\' C22\' C33 C34 C35 C36 C37 C38 C39 C310 C311 C312 C313 C314 C315 C316)
+	unsat=""
 	;;
       *)
 	echo "ERROR: Unknown tail"
