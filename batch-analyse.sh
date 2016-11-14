@@ -26,7 +26,7 @@ Options: \n
 \t-s \t topol.tpr \n
 \t-f \t traj.xtc \n
 \t-e \t ener.edr\n
-\t-b \t first frame to use (ps) \n
+\t-b \t block size for block average (ps) \n
 \t-dt \t skip frames \n
 \t-j \t max parallel jobs \n
 \t-fep \t FEP calculation directory\n
@@ -453,29 +453,12 @@ density() {
     fi
 
     mkdir -p $group
+    cd $group 
 
-    b=1
-    while [[ $b -lt $lastframe ]]; do
-      let e=$b+${block}-1
-      mkdir -p $group/$b-$e
-      echo "$ref_group $group" | gmx density -f $traj -s $structure -center -n $index -b $b -e $e -symm -sl $sl -dens $dens -o $group/$b-$e/density_sl${sl}_${dens}.xvg -dt $dt
-      let b=$b+${block}
-    done
-    #sem --wait
+    cmd="echo \"$ref_group $group\" | gmx density -f $traj -s $structure -center -n $index -symm -sl $sl -dens $dens -o density_sl${sl}_${dens}.xvg -dt $dt"
+    block_average "$cmd" $lastframe
+    cd ..
 
-    # compute averages
-    allfiles=$(find $group -name density_sl${sl}_${dens}.xvg | sort -t / -k2nr)
-    filelist=""
-    for f in $allfiles; do
-      filelist="$filelist $f"
-      time1=$(echo $f | cut -d "/" -f2 | cut -d "-" -f1)
-      time2=$(echo $filelist | cut -d "/" -f2 | cut -d "-" -f2)
-      average-xvg.py -o $group/${time1}-${time2}_density_sl${sl}_${dens}.xvg $filelist
-    done
-
-    # join blocks to one file
-    allfiles=$(find $group -name density_sl${sl}_${dens}.xvg | sort -t / -k2n)
-    join-xvg.py -l -o $group/density_sl${sl}_${dens}.xvg $allfiles
 
   done
 
@@ -541,9 +524,6 @@ bar() {
     time2=$(echo $filelist | cut -f 2 -d '-' | cut -d / -f 1)
     average-xvg.py -o barint_${time1}-${time2}.xvg $filelist
   done
-
-  # DEMUX
-  demux.pl $fepdir/lambda0/md.log
 
   cd ..
 }
