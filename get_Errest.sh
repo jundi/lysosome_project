@@ -5,12 +5,15 @@ set -e
 # Uncomment systems for calculation
 #----------------------------------
 systems=(
-90POPC_10CHOL \
-60POPC_10CHOL_30DPPC \
-60POPC_10CHOL_30CERA \
-60POPC_10CHOL_30SM16 \
-60POPC_10CHOL_30LBPA22RR \
+60POPC_10CHOL_30CERA \ 
+60POPC_10CHOL_30DPPC \ 
+60POPC_10CHOL_30LBPA14 \ 
+60POPC_10CHOL_30LBPA16 \ 
+60POPC_10CHOL_30LBPA22RR \ 
+60POPC_10CHOL_30SM16 \ 
+90POPC_10CHOL \ 
 )
+
 
 #---------------------------------------------------
 # Set time (ps) to skip from beginning of trajectory
