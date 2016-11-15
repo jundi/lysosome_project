@@ -2,11 +2,13 @@
 set -e
 
 systems=(
-90POPC_10CHOL \
-60POPC_10CHOL_30DPPC \
 60POPC_10CHOL_30CERA \
-60POPC_10CHOL_30SM16 \
+60POPC_10CHOL_30DPPC \
+60POPC_10CHOL_30LBPA14 \
+60POPC_10CHOL_30LBPA16 \
 60POPC_10CHOL_30LBPA22RR \
+60POPC_10CHOL_30SM16 \
+90POPC_10CHOL \
 )
 
 for s in ${systems[@]}; do
@@ -40,7 +42,7 @@ for s in ${systems[@]}; do
       else
 	case $error_method in
 	  blockavg)
-	    barint="$s/free_energy/${l}/analys/bar_b10000/barint_1-100000.xvg"
+	    barint="$s/free_energy/${l}/analys/bar_b10000/1-100000_barint.xvg"
 	    ;;
 	  cumsum)
 	    barint="$s/free_energy/${l}/analys/bar_b100000/1-100000/bar_cumsum.xvg"
@@ -72,4 +74,3 @@ for s in ${systems[@]}; do
   done
 
 done
-
