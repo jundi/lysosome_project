@@ -732,7 +732,7 @@ contacts() {
       continue
     fi
 
-    echo "$refgroup $group" | sem -j 6 gmx mindist -f $traj -n $index -s $structure -on numcount_r${distance}_$group -od mindist_r{$distance}_$group -d $distance -dt $dt
+    echo "$refgroup $group" | gmx mindist -f $traj -n $index -s $structure -on numcount_r${distance}_$group -od mindist_r{$distance}_$group -d $distance -dt $dt
 
   done
 
