@@ -1,22 +1,28 @@
-#traj=../../npt/traj_0ns-500ns_dt1000.xtc
-traj=test.xtc
+#!/bin/bash
+set -e
+
+traj=../../npt/traj_0ns-500ns_dt1000.xtc
+#traj=../../npt/traj_0ns-500ns_dt100.xtc
 tpr=../../npt/topol.tpr
 ndx=../../index.ndx
 g1="vector"
-
 boxsize=3.9
-last_resid=15
-sep=" or "
+last_resid=30
+sep=" ; "
+
 resid=1
 group1=""
 while [[ $resid -le $last_resid ]]; do
-  group1="${group1}(name P and (z >= $boxsize) and resname SM16 and resid $resid) or (name N and (z >= $boxsize) and resname SM16 and resid $resid) or (name N and (z < $boxsize) and resname SM16 and resid $resid) or (name P and (z < $boxsize) and resname SM16 and resid $resid)" 
+
+  group1="$group1(name P and resid $resid and z >= $boxsize) plus (name N and resid $resid and z >=$boxsize) plus (name N and resid $resid and z < $boxsize) plus (name P and resid $resid and z < $boxsize)" 
   if [[ $resid -lt $last_resid ]];then
+
     group1="${group1}$sep" 
   fi
+
   let resid=$resid+1
+
 done
 
-echo -e $group1
+gmx gangle -f $traj -s $tpr -n $ndx  -g1 $g1 -group1 "$group1" -g2 z -oav -oall -oh
 
-gmx gangle -f $traj -s $tpr -n $ndx  -g1 $g1 -group1 "$group1" -g2 z -oav -oall -oh 
