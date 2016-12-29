@@ -3,8 +3,8 @@ set -e
 
 # input files
 mdp="minim.mdp"
-top="../../../../topology/topol_FEP.top"
-ndx="../../../../index.ndx"
+top="../../../topology/topol_FEP.top"
+ndx="../../../index.ndx"
 confdir="../init/"
 
 for l in {0..15}; do
